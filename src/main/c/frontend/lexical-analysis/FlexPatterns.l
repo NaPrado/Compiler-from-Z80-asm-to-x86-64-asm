@@ -16,12 +16,12 @@
 
 extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
 extern CompilationStatus EnterImportExpressionLexemeAction(FlexContext context);
-extern CompilationStatus EnterMultilineCommentLexemeAction(FlexContext context);
+extern CompilationStatus EnterInlineCommentLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
 extern CompilationStatus IntegerLexemeAction();
 extern CompilationStatus LeaveImportExpressionLexemeAction();
-extern CompilationStatus LeaveMultilineCommentLexemeAction();
+extern CompilationStatus LeaveInlineCommentLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
@@ -34,7 +34,7 @@ extern CompilationStatus UnknownLexemeAction();
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
 %x IMPORT_EXPRESSION
-%x MULTILINE_COMMENT
+%x INLINE_COMMENT
 
 /**
  * Reusable patterns.
@@ -43,6 +43,7 @@ extern CompilationStatus UnknownLexemeAction();
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
 whitespace			[[:space:]]+
+
 
 %%
 
@@ -54,25 +55,94 @@ whitespace			[[:space:]]+
 
 %}
 
-"{"									{ return EnterImportExpressionLexemeAction(IMPORT_EXPRESSION); }
-<IMPORT_EXPRESSION>[^{}]+			{ return SubexpressionLexemeAction(); }
-<IMPORT_EXPRESSION>"}"				{ return LeaveImportExpressionLexemeAction(); }
-<IMPORT_EXPRESSION>.				{ return UnknownLexemeAction(); }
 
-"/*"								{ return EnterMultilineCommentLexemeAction(MULTILINE_COMMENT); }
-<MULTILINE_COMMENT>"*/"				{ return LeaveMultilineCommentLexemeAction(); }
-<MULTILINE_COMMENT>[^*]+			{ return IgnoredLexemeAction(); }
-<MULTILINE_COMMENT>.				{ return IgnoredLexemeAction(); }
+(?i:A)                                 { return Z80RegisterLexemeAction(TOK_REG_A); }
+(?i:B)                                 { return Z80RegisterLexemeAction(TOK_REG_B); }
+(?i:C)                                 { return Z80RegisterLexemeAction(TOK_REG_C); }
+(?i:D)                                 { return Z80RegisterLexemeAction(TOK_REG_D); }
+(?i:E)                                 { return Z80RegisterLexemeAction(TOK_REG_E); }
+(?i:H)                                 { return Z80RegisterLexemeAction(TOK_REG_H); }
+(?i:L)                                 { return Z80RegisterLexemeAction(TOK_REG_L); }
+(?i:BC)                                { return Z80RegisterLexemeAction(TOK_REG_BC); }
+(?i:DC)                                { return Z80RegisterLexemeAction(TOK_REG_DC); }
+(?i:HL)                                { return Z80RegisterLexemeAction(TOK_REG_HL); }
+(?i:AF)                                { return Z80RegisterLexemeAction(TOK_REG_AF); }
+(?i:SP)                                { return Z80RegisterLexemeAction(TOK_REG_SP); }
+(?i:IY)                                { return Z80RegisterLexemeAction(TOK_REG_IY); }
+(?i:IX)                                { return Z80RegisterLexemeAction(TOK_REG_IX); }
 
-"-"									{ return ArithmeticOperatorLexemeAction(SUB); }
-"*"									{ return ArithmeticOperatorLexemeAction(MUL); }
-"/"									{ return ArithmeticOperatorLexemeAction(DIV); }
-"+"									{ return ArithmeticOperatorLexemeAction(ADD); }
 
+(?i:ADD)                               { return Z80InstructionLexemeAction(TOK_OP_ADD); }
+(?i:ADC)                               { return Z80InstructionLexemeAction(TOK_OP_ADC); }
+(?i:SUB)                               { return Z80InstructionLexemeAction(TOK_OP_SUB); }
+(?i:SBC)                               { return Z80InstructionLexemeAction(TOK_OP_SBC); }
+(?i:INC)                               { return Z80InstructionLexemeAction(TOK_OP_INC); }
+(?i:DEC)                               { return Z80InstructionLexemeAction(TOK_OP_DEC); }
+(?i:NEG)                               { return Z80InstructionLexemeAction(TOK_OP_NEG); }
+
+(?i:LD)                                { return Z80InstructionLexemeAction(TOK_OP_LD); }
+
+(?i:AND)                               { return Z80InstructionLexemeAction(TOK_OP_AND); }
+(?i:OR)                                { return Z80InstructionLexemeAction(TOK_OP_OR); }
+(?i:XOR)                               { return Z80InstructionLexemeAction(TOK_OP_XOR); }
+(?i:CP)                                { return Z80InstructionLexemeAction(TOK_OP_CP); }
+(?i:CPL)                               { return Z80InstructionLexemeAction(TOK_OP_CPL); }
+
+(?i:JP)                                { return Z80InstructionLexemeAction(TOK_OP_JP); }
+(?i:JR)                                { return Z80InstructionLexemeAction(TOK_OP_JR); }
+(?i:DJNZ)                              { return Z80InstructionLexemeAction(TOK_OP_DJNZ); }
+
+(?i:SLA)                               { return Z80InstructionLexemeAction(TOK_OP_SLA); }
+(?i:SRA)                               { return Z80InstructionLexemeAction(TOK_OP_SRA); }
+(?i:SRL)                               { return Z80InstructionLexemeAction(TOK_OP_SRL); }
+
+(?i:RLA)                               { return Z80InstructionLexemeAction(TOK_OP_RLA); }
+(?i:RL)                                { return Z80InstructionLexemeAction(TOK_OP_RL); }
+(?i:RLC)                               { return Z80InstructionLexemeAction(TOK_OP_RLC); }
+(?i:RLCA)                              { return Z80InstructionLexemeAction(TOK_OP_RLCA); }
+(?i:RRA)                               { return Z80InstructionLexemeAction(TOK_OP_RRA); }
+(?i:RR)                                { return Z80InstructionLexemeAction(TOK_OP_RR); }
+(?i:RRCA)                              { return Z80InstructionLexemeAction(TOK_OP_RRCA); }
+(?i:RRC)                               { return Z80InstructionLexemeAction(TOK_OP_RRC); }
+(?i:RLD)                               { return Z80InstructionLexemeAction(TOK_OP_RLD); }
+(?i:RRD)                               { return Z80InstructionLexemeAction(TOK_OP_RRD); }
+
+(?i:SET)                               { return Z80InstructionLexemeAction(TOK_OP_SET); }
+(?i:RES)                               { return Z80InstructionLexemeAction(TOK_OP_RES); }
+
+(?i:PUSH)                              { return Z80InstructionLexemeAction(TOK_OP_PUSH); }
+(?i:POP)                               { return Z80InstructionLexemeAction(TOK_OP_POP); }
+
+(?i:CALL)                              { return Z80InstructionLexemeAction(TOK_OP_CALL); }
+(?i:RET)                               { return Z80InstructionLexemeAction(TOK_OP_RET); }
+
+(?i:DAA)                               { return Z80InstructionLexemeAction(TOK_OP_DAA); }
+(?i:NOP)                               { return Z80InstructionLexemeAction(TOK_OP_NOP); }
+
+
+(?i:NZ)                               { return Z80InstructionLexemeAction(TOK_FLAG_NZ); }
+(?i:Z)                               { return Z80InstructionLexemeAction(TOK_FLAG_Z); }
+(?i:NC)                               { return Z80InstructionLexemeAction(TOK_FLAG_NC); }
+(?i:C)                               { return Z80InstructionLexemeAction(TOK_FLAG_C); }
+(?i:PO)                               { return Z80InstructionLexemeAction(TOK_FLAG_PO); }
+(?i:PE)                               { return Z80InstructionLexemeAction(TOK_FLAG_PE); }
+(?i:P)                               { return Z80InstructionLexemeAction(TOK_FLAG_P); }
+(?i:M)                               { return Z80InstructionLexemeAction(TOK_FLAG_M); }
+
+[[:digit:]]+						{ return IntegerLexemeAction(); }
+
+","                                 { return ComaLexemeAction(COMA); }
+"+"                                 { return PlusLexemeAction(PLUS); }
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
 
-[[:digit:]]+						{ return IntegerLexemeAction(); }
+";"                                 { return EnterInlineCommentLexemeAction(INLINE_COMMENT); }
+<INLINE_COMMENT>\n                  { return LeaveInlineCommentLexemeAction(); }
+<INLINE_COMMENT>.                   { return IgnoredLexemeAction(); }
+
+
+
+
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 .									{ return UnknownLexemeAction(); }
