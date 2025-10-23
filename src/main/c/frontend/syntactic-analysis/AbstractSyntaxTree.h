@@ -21,6 +21,11 @@ typedef struct Constant Constant;
 typedef struct Expression Expression;
 typedef struct Factor Factor;
 typedef struct Program Program;
+typedef struct DataBlock DataBlock;
+typedef struct DataLine DataLine;
+typedef struct CodeBlock CodeBlock;
+typedef struct DataSeg DataSeg;
+typedef struct CodeSeg CodeSeg;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).

@@ -78,6 +78,32 @@ CompilationStatus EnterInlineCommentLexemeAction(FlexContext context) {
 	return IN_PROGRESS;
 }
 
+CompilationStatus LabelLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, LABEL);
+	token->semanticValue->string = strdup(token->lexeme);
+	size_t len = strlen(token->semanticValue->string);
+	if (len > 0 && token->semanticValue->string[len-1] == ':') {
+		token->semanticValue->string[len-1] = '\0';
+	}
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	free(token->lexeme);
+	free(token->semanticValue); 
+	free(token);
+	return status;
+}
+
+CompilationStatus IdentifierLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, IDENTIFIER);
+	token->semanticValue->string = strdup(token->lexeme);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	free(token->lexeme);
+	free(token->semanticValue);
+	free(token);
+	return status;
+}
+
 CompilationStatus EOFLexemeAction() {
 	CompilationStatus status = IN_PROGRESS;
 	Token * token = createToken(_lexicalAnalyzer, 0);

@@ -29,12 +29,18 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	signed int integer;
 	TokenLabel token;
 
-	/** Non-terminals. */
-
+	/** Non-terminals. */B
+	/* AST node pointers used as semantic values */
 	Constant * constant;
-	Expression * expression;
 	Factor * factor;
+	Expression * expression;
 	Program * program;
+
+	DataBlock * dataBlock;
+	DataLine * dataLine;
+	CodeBlock * codeBlock;
+	DataSeg * dataSeg;
+	CodeSeg * codeSeg;
 }
 
 /**
@@ -116,9 +122,13 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
+
+%type <dataLine> dataLine
+%type <dataLine> dataLine
+%type <dataBlock> dataBlock
+%type <codeBlock> codeBlock
+%type <dataSeg> dataSeg
+%type <codeSeg> codeSeg
 %type <program> program
 
 /**

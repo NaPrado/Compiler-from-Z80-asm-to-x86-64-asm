@@ -33,8 +33,6 @@ extern CompilationStatus UnknownLexemeAction();
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%x IMPORT_EXPRESSION
-%x INLINE_COMMENT
 
 /**
  * Reusable patterns.
@@ -43,6 +41,10 @@ extern CompilationStatus UnknownLexemeAction();
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
 whitespace			[[:space:]]+
+digit				[0-9]
+hex					[0-9A-Fa-f]
+letter				[A-Za-z_]
+identifier			{letter}({letter}|{digit})*
 
 
 %%
@@ -55,6 +57,7 @@ whitespace			[[:space:]]+
 
 %}
 
+";"
 
 (?i:A)                                 { return Z80RegisterLexemeAction(TOK_REG_A); }
 (?i:B)                                 { return Z80RegisterLexemeAction(TOK_REG_B); }
@@ -109,6 +112,8 @@ whitespace			[[:space:]]+
 (?i:P)                               { return Z80InstructionLexemeAction(TOK_FLAG_P); }
 (?i:M)                               { return Z80InstructionLexemeAction(TOK_FLAG_M); }
 
+(?i:MACRO)                          { return Z80M }
+
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
 ","                                 { return ComaLexemeAction(COMA); }
@@ -116,13 +121,8 @@ whitespace			[[:space:]]+
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
 
-";"                                 { return EnterInlineCommentLexemeAction(INLINE_COMMENT); }
-<INLINE_COMMENT>\n                  { return LeaveInlineCommentLexemeAction(); }
-<INLINE_COMMENT>.                   { return IgnoredLexemeAction(); }
-
-
-
-
+{identifier}":"                     { return LabelLexemeAction() }
+{identifier}                        { return IdentifierLexemeAction() }
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 .									{ return UnknownLexemeAction(); }
