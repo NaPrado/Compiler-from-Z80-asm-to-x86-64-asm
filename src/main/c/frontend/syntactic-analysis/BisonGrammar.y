@@ -51,16 +51,66 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 /** Terminals. */
 %token <integer> INTEGER
-%token <token> ADD
-%token <token> CLOSE_BRACE
-%token <token> CLOSE_COMMENT
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_BRACE
-%token <token> OPEN_COMMENT
-%token <token> OPEN_PARENTHESIS
-%token <token> SUB
+%token <token>TOK_REG_A
+%token <token>TOK_REG_B
+%token <token>TOK_REG_C
+%token <token>TOK_REG_D
+%token <token>TOK_REG_E
+%token <token>TOK_REG_H
+%token <token>TOK_REG_L
+%token <token>TOK_REG_BC
+%token <token>TOK_REG_DC
+%token <token>TOK_REG_HL
+%token <token>TOK_REG_AF
+%token <token>TOK_REG_SP
+%token <token>TOK_REG_IY
+%token <token>TOK_REG_IX
+
+
+%token <token>TOK_OP_ADD
+%token <token>TOK_OP_SUB
+%token <token>TOK_OP_INC
+%token <token>TOK_OP_DEC
+%token <token>TOK_OP_NEG
+
+%token <token>TOK_OP_LD
+
+%token <token>TOK_OP_AND
+%token <token>TOK_OP_OR
+%token <token>TOK_OP_XOR
+%token <token>TOK_OP_CPL
+
+%token <token>TOK_OP_CP
+
+%token <token>TOK_OP_JP
+%token <token>TOK_OP_JR
+%token <token>TOK_OP_DJNZ
+
+%token <token>TOK_OP_PUSH
+%token <token>TOK_OP_POP
+
+%token <token>TOK_OP_CALL
+%token <token>TOK_OP_RET
+
+%token <token>TOK_OP_NOP
+
+
+%token <token>TOK_FLAG_NZ
+%token <token>TOK_FLAG_Z
+%token <token>TOK_FLAG_NC
+%token <token>TOK_FLAG_C
+%token <token>TOK_FLAG_PO
+%token <token>TOK_FLAG_PE
+%token <token>TOK_FLAG_P
+%token <token>TOK_FLAG_M
+
+%token <token>COMA
+%token <token>PLUS
+%token <token>OPEN_PARENTHESIS
+%token <token>CLOSE_PARENTHESIS
+
+%token <token>OPEN_COMMENT
+%token <token>CLOSE_COMMENT
 
 %token <token> IGNORED
 %token <token> UNKNOWN
