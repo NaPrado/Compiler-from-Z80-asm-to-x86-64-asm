@@ -174,17 +174,18 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
 program
-	: codeSeg dataSeg										{ $$ = ExpressionProgramSemanticAction($1); }
-	;
-
-codeSeg
-	: codeBlock
-	;
+    : codeBlock dataBlock     { $$ = ExpressionProgramSemanticAction($1, $2); }
+    ;
 
 codeBlock
-	: codeBlock codeLine
-	| codeLine
-	;
+    : codeBlock codeLine      { $$ = AppendCodeLine($1, $2); }
+    | codeLine                { $$ = CodeBlockInit($1); }
+    ;
+
+dataBlock
+    : dataBlock dataLine      { $$ = AppendDataLine($1, $2); }
+    | dataLine                { $$ = DataBlockInit($1); }
+    ;
 
 codeLine
 	: macroDef
@@ -192,9 +193,14 @@ codeLine
 	| NEW_LINE
 	;
 
+dataLine
+	: macroDef
+	| instruction NEW_LINE
+	| NEW_LINE
+	;
+
 macroDef
-	: ID MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE
-		{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
+	: ID MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE	{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
 	;
 
 macroParamListOpt

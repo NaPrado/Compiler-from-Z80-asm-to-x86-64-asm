@@ -14,61 +14,55 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
  * person, but without the madness).
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
+typedef enum InstructionType ExpressionType;
+typedef enum RegisterName FactorType;
+typedef enum ConditionType ConditionType;
 
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
 typedef struct Program Program;
-typedef struct DataBlock DataBlock;
-typedef struct DataLine DataLine;
 typedef struct CodeBlock CodeBlock;
-typedef struct DataSeg DataSeg;
-typedef struct CodeSeg CodeSeg;
+typedef struct DataBlock DataBlock;
+typedef struct Constant Constant;
+typedef struct DataLine DataLine;
+
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
+
+
+enum InstructionType {
+	INST_LD, INST_ADD, INST_SUB, INST_INC, INST_DEC,
+    INST_AND, INST_OR, INST_XOR, INST_CP,
+    INST_JP, INST_JR, INST_DJNZ, INST_CALL,
+    INST_RET, INST_PUSH, INST_POP, INST_NOP
 };
 
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
+enum RegisterName {
+    REG_A, REG_B, REG_C, REG_D, REG_E, REG_H, REG_L,
+    REG_AF, REG_BC, REG_DE, REG_HL, REG_SP, REG_IX, REG_IY
+};
+
+enum ConditionType{
+    COND_NZ, COND_Z, COND_NC, COND_C,
+    COND_PO, COND_PE, COND_P, COND_M
 };
 
 struct Constant {
 	int value;
 };
 
-struct Factor {
-	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
-};
-
-struct Expression {
-	union {
-		Factor * factor;
-		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
-		};
-	};
-	ExpressionType type;
-};
-
 struct Program {
-	Expression * expression;
+	union {
+		DataSeg * data_seg;
+		CodeSeg * code_seg;
+	};
+};
+
+struct DataBlock {
+};
+
+struct CodeBlock {
 };
 
 /**
