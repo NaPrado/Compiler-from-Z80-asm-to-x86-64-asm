@@ -57,7 +57,7 @@ identifier			{letter}({letter}|{digit})*
 
 %}
 
-";"
+";".*                                  { return CommentLexemeAction(); }
 
 (?i:A)                                 { return Z80RegisterLexemeAction(TOK_REG_A); }
 (?i:B)                                 { return Z80RegisterLexemeAction(TOK_REG_B); }
@@ -112,7 +112,8 @@ identifier			{letter}({letter}|{digit})*
 (?i:P)                               { return Z80InstructionLexemeAction(TOK_FLAG_P); }
 (?i:M)                               { return Z80InstructionLexemeAction(TOK_FLAG_M); }
 
-(?i:MACRO)                          { return Z80M }
+(?i:MACRO)                          { return Z80MacroLexemeAction(MACRO); }
+(?i:ENDM)                           { return Z80MacroLexemeAction(ENDM); }
 
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
@@ -121,8 +122,16 @@ identifier			{letter}({letter}|{digit})*
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
 
-{identifier}":"                     { return LabelLexemeAction() }
-{identifier}                        { return IdentifierLexemeAction() }
+(?i:equ)                            { return DataDeclarationLexemeAction(EQU); }
+(?i:db)                             { return DataDeclarationLexemeAction(DB); }
+(?i:dw)                             { return DataDeclarationLexemeAction(DW); }
+(?i:defm)                           { return DataDeclarationLexemeAction(DEFM); }
+(?i:ds)                             { return DataDeclarationLexemeAction(DS); }
+
+{identifier}":"                     { return LabelLexemeAction(); }
+{identifier}                        { return IdentifierLexemeAction(); }
+
+\n                                  { return NewLineLexemeAction(); }
 
 {whitespace}						{ return IgnoredLexemeAction(); }
 .									{ return UnknownLexemeAction(); }

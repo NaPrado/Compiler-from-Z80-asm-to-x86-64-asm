@@ -27,20 +27,21 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	/** Terminals. */
 
 	signed int integer;
+	char * string;
 	TokenLabel token;
 
-	/** Non-terminals. */B
+	/** Non-terminals. */
 	/* AST node pointers used as semantic values */
 	Constant * constant;
 	Factor * factor;
 	Expression * expression;
-	Program * program;
 
 	DataBlock * dataBlock;
 	DataLine * dataLine;
 	CodeBlock * codeBlock;
 	DataSeg * dataSeg;
 	CodeSeg * codeSeg;
+	Program * program;
 }
 
 /**
@@ -57,6 +58,9 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 /** Terminals. */
 %token <integer> INTEGER
+%token <string> ID
+%token <string> LABEL
+
 %token <token>TOK_REG_A
 %token <token>TOK_REG_B
 %token <token>TOK_REG_C
@@ -110,6 +114,14 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token>TOK_FLAG_P
 %token <token>TOK_FLAG_M
 
+
+%token <token> EQU
+%token <token> DB
+%token <token> DW
+%token <token> DEFM
+%token <token> DS
+
+
 %token <token>COMA
 %token <token>PLUS
 %token <token>OPEN_PARENTHESIS
@@ -121,15 +133,32 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> IGNORED
 %token <token> UNKNOWN
 
+%token <token> MACRO
+%token <token> ENDM
+
+%token <token> NEW_LINE
+
 /** Non-terminals. */
 
-%type <dataLine> dataLine
-%type <dataLine> dataLine
+%type <operand>   cond
+%type <dataLine>  dataLine
+%type <codeLine>  codeLine
 %type <dataBlock> dataBlock
 %type <codeBlock> codeBlock
-%type <dataSeg> dataSeg
-%type <codeSeg> codeSeg
-%type <program> program
+%type <dataSeg>   dataSeg
+%type <codeSeg>   codeSeg
+%type <program>   program
+
+/* estos son necesarios para las reglas de abajo */
+%type <operand>   operand reg8 reg16 mem_hl mem_ixiy_disp mem_abs expr
+%type <codeLine>  macroDef
+%type <instruction> instruction
+%type <codeBlock> macroBody
+%type <idList>    macroParamListOpt macroParamList
+
+/* Asegurate de tener también los tokens: */
+%token <token> MACRO ENDM
+%token <string> ID
 
 /**
  * Precedence and associativity.
@@ -144,21 +173,132 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: expression											{ $$ = ExpressionProgramSemanticAction($1); }
+program
+	: codeSeg dataSeg										{ $$ = ExpressionProgramSemanticAction($1); }
 	;
 
-expression: expression[left] ADD expression[right]			{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]				{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor												{ $$ = FactorExpressionSemanticAction($1); }
+codeSeg
+	: codeBlock
 	;
 
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS		{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant												{ $$ = ConstantFactorSemanticAction($1); }
+codeBlock
+	: codeBlock codeLine
+	| codeLine
 	;
 
-constant: INTEGER											{ $$ = IntegerConstantSemanticAction($1); }
+codeLine
+	: macroDef
+	| instruction NEW_LINE
+	| NEW_LINE
+	;
+
+macroDef
+	: ID MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE
+		{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
+	;
+
+macroParamListOpt
+	: %empty                     { $$ = Z80IdListInit(); }
+	| macroParamList                  { $$ = $1; }
+	;
+
+macroParamList
+	: ID                      { $$ = Z80IdListInit1($1); }
+	| macroParamList COMMA ID { $$ = Z80IdListAppend($1, $3); }
+	;
+
+macroBody
+	: %empty                         { $$ = Z80CodeBlockInit(NULL); }
+	| macroBody instruction NEW_LINE      { $$ = Z80CodeBlockAppend($1, Z80MakeCodeLineInsn($2)); }
+	| macroBody NEW_LINE                  { $$ = $1; }
+	;
+
+
+instruction
+	: TOK_OP_LD  operand COMMA operand                          { $$ = Z80Insn2(INST_LD,  $2, $4); }
+	| TOK_OP_ADD operand                                        { $$ = Z80Insn1(INST_ADD, $2); }
+	| TOK_OP_SUB operand                                        { $$ = Z80Insn1(INST_SUB, $2); }
+	| TOK_OP_INC operand                                        { $$ = Z80Insn1(INST_INC, $2); }
+	| TOK_OP_DEC operand                                        { $$ = Z80Insn1(INST_DEC, $2); }
+	| TOK_OP_AND operand                                        { $$ = Z80Insn1(INST_AND, $2); }
+	| TOK_OP_OR  operand                                        { $$ = Z80Insn1(INST_OR,  $2); }
+	| TOK_OP_XOR operand                                        { $$ = Z80Insn1(INST_XOR, $2); }
+	| TOK_OP_CP  operand                                        { $$ = Z80Insn1(INST_CP,  $2); }
+	| TOK_OP_JP  operand                                        { $$ = Z80Insn1(INST_JP,  $2); }
+	| TOK_OP_JP	 cond COMMA operand								{ $$ = Z80Insn1(INST_JP, $2, $4) }
+	| TOK_OP_JR  operand                                        { $$ = Z80Insn1(INST_JR,  $2); }
+	| TOK_OP_JR  cond COMMA operand                             { $$ = Z80Insn1(INST_JR,  $2, $4); }
+	| TOK_OP_DJNZ  operand                                      { $$ = Z80Insn1(INST_DJNZ,  $2); }
+	| TOK_OP_CALL operand                                       { $$ = Z80Insn1(INST_CALL,$2); }
+	| TOK_OP_RET                                                { $$ = Z80Insn0(INST_RET); }
+	| TOK_OP_PUSH operand                                       { $$ = Z80Insn1(INST_PUSH,$2); }
+	| TOK_OP_POP  operand                                       { $$ = Z80Insn1(INST_POP, $2); }
+	| TOK_OP_NOP                                                { $$ = Z80Insn0(INST_NOP); }
+	;
+
+cond
+  : TOK_FLAG_NZ  												{ $$ = Z80OpCond(COND_NZ); }
+  | TOK_FLAG_Z   												{ $$ = Z80OpCond(COND_Z);  }
+  | TOK_FLAG_NC  												{ $$ = Z80OpCond(COND_NC); }
+  | TOK_FLAG_C   												{ $$ = Z80OpCond(COND_C);  }
+  | TOK_FLAG_PO  												{ $$ = Z80OpCond(COND_PO); }
+  | TOK_FLAG_PE  												{ $$ = Z80OpCond(COND_PE); }
+  | TOK_FLAG_P   												{ $$ = Z80OpCond(COND_P);  }
+  | TOK_FLAG_M   												{ $$ = Z80OpCond(COND_M);  }
+  ;
+
+/* ===== operandos (modos principales del Z80) ===== */
+operand
+	: reg8                                               { $$ = $1; }
+	| reg16                                              { $$ = $1; }
+	| mem_hl                                             { $$ = $1; }
+	| mem_ixiy_disp                                      { $$ = $1; }
+	| mem_abs                                            { $$ = $1; }
+	| expr                                               { $$ = $1; }
+	;
+
+reg8
+	: TOK_REG_A                                          { $$ = Z80OpReg8(REG_A); }
+	| TOK_REG_B                                          { $$ = Z80OpReg8(REG_B); }
+	| TOK_REG_C                                          { $$ = Z80OpReg8(REG_C); }
+	| TOK_REG_D                                          { $$ = Z80OpReg8(REG_D); }
+	| TOK_REG_E                                          { $$ = Z80OpReg8(REG_E); }
+	| TOK_REG_H                                          { $$ = Z80OpReg8(REG_H); }
+	| TOK_REG_L                                          { $$ = Z80OpReg8(REG_L); }
+	;
+
+reg16
+	: TOK_REG_AF                                         { $$ = Z80OpReg16(REG_AF); }
+	| TOK_REG_BC                                         { $$ = Z80OpReg16(REG_BC); }
+	| TOK_REG_DE                                         { $$ = Z80OpReg16(REG_DE); }
+	| TOK_REG_HL                                         { $$ = Z80OpReg16(REG_HL); }
+	| TOK_REG_SP                                         { $$ = Z80OpReg16(REG_SP); }
+	| TOK_REG_IX                                         { $$ = Z80OpReg16(REG_IX); }
+	| TOK_REG_IY                                         { $$ = Z80OpReg16(REG_IY); }
+	;
+
+/* (HL) */
+mem_hl
+	: OPEN_PARENTHESIS TOK_REG_HL CLOSE_PARENTHESIS       { $$ = Z80OpMemHL(); }
+	;
+
+/* (IX + d) | (IY + d) — d=expr */
+mem_ixiy_disp
+	: OPEN_PARENTHESIS TOK_REG_IX PLUS expr CLOSE_PARENTHESIS
+	                                                    { $$ = Z80OpMemIdxDisp(REG_IX, $4); }
+	| OPEN_PARENTHESIS TOK_REG_IY PLUS expr CLOSE_PARENTHESIS
+	                                                    { $$ = Z80OpMemIdxDisp(REG_IY, $4); }
+	;
+
+/* (nn) absoluto */
+mem_abs
+	: OPEN_PARENTHESIS expr CLOSE_PARENTHESIS            { $$ = Z80OpMemAbs($2); }
+	;
+
+/* inmediatos o símbolos */
+expr
+	: INTEGER                                            { $$ = Z80OpImm($1); }
+	| ID                                         { $$ = Z80OpSymbol($1); }
 	;
 
 %%

@@ -68,6 +68,14 @@ CompilationStatus Z80InstructionLexemeAction(TokenLabel label) {
 	return status;
 }
 
+CompilationStatus Z80MacroLexemeAction(TokenLabel label) {
+	Token * token = createToken(_lexicalAnalyzer, label);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}
+
 CompilationStatus EnterInlineCommentLexemeAction(FlexContext context) {
 	if (_logIgnoredLexemes) {
 		Token * token = createToken(_lexicalAnalyzer, OPEN_COMMENT);
@@ -94,7 +102,7 @@ CompilationStatus LabelLexemeAction() {
 }
 
 CompilationStatus IdentifierLexemeAction() {
-	Token * token = createToken(_lexicalAnalyzer, IDENTIFIER);
+	Token * token = createToken(_lexicalAnalyzer, ID);
 	token->semanticValue->string = strdup(token->lexeme);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
@@ -138,10 +146,9 @@ CompilationStatus IntegerLexemeAction() {
 	return status;
 }
 
-CompilationStatus LeaveInlineCommentLexemeAction() {
-	leaveLexicalAnalyzerContext(_lexicalAnalyzer);
+CompilationStatus CommentLexemeAction() {
 	if (_logIgnoredLexemes) {
-		Token * token = createToken(_lexicalAnalyzer, CLOSE_COMMENT);
+		Token * token = createToken(_lexicalAnalyzer, IGNORED);
 		_logTokenAction(__FUNCTION__, token);
 		destroyToken(token);
 	}
