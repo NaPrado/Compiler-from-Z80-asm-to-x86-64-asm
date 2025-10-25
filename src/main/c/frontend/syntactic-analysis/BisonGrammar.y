@@ -231,13 +231,18 @@ dataBlock
 codeLine
 	: macroDef                          { $$ = $1; }
 	| instruction NEW_LINE              { $$ = Z80MakeCodeLineInsn($1); }
+	| instruction                       { $$ = Z80MakeCodeLineInsn($1); }  // ← AGREGAR
 	| NEW_LINE                          { $$ = NULL; }
 	;
 
+
 dataLine
 	: TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($2); }
+	| TOK_DATA_DB exprList                 { $$ = Z80MakeDataLineDb($2); }  // ← AGREGAR
 	| TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($2); }
+	| TOK_DATA_DW exprList                 { $$ = Z80MakeDataLineDw($2); }  // ← AGREGAR
 	| TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($2); }
+	| TOK_DATA_DS expr                     { $$ = Z80MakeDataLineDs($2); }  // ← AGREGAR
 	| NEW_LINE                             { $$ = NULL; }
 	;
 

@@ -300,10 +300,13 @@ Operand * Z80OpMemAbs(Operand * addr) {
     return op;
 }
 
-Operand * Z80OpImm(int value) {
-    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+Operand* Z80OpImm(int value) {
+    Operand* op = malloc(sizeof(Operand));
     op->type = OPERAND_CONSTANT;
-    op->constantValue = value;
+    Expr* expr = malloc(sizeof(Expr)); 
+    expr->value = value;
+    op->expr = expr;
+    
     return op;
 }
 

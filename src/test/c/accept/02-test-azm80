@@ -1,0 +1,9 @@
+Dseg
+DB 10, 20, 30
+DW 1000
+DS 5
+
+Cseg
+LD A, 10
+ADD B
+NOP
