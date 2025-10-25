@@ -22,14 +22,15 @@ typedef enum OperandType OperandType;
 
 typedef struct Constant Constant;
 typedef struct Program Program;
-typedef struct Block Block;
-typedef struct Line Line;
+typedef struct CodeSeg CodeSeg;
+typedef struct DataSeg DataSeg;
+typedef struct CodeBlock CodeBlock;
+typedef struct DataBlock DataBlock;
+typedef struct CodeLine CodeLine;
+typedef struct DataLine DataLine;
 typedef struct MacroDef MacroDef;
-typedef struct NewLine NewLine;
 typedef struct Instruction Instruction;
 typedef struct Operand Operand;
-typedef struct Reg8 Reg8;
-typedef struct Reg16 Reg16;
 typedef struct Expr Expr;
 
 
@@ -73,23 +74,36 @@ enum LineType{
     LINE_EMPTY
 };
 
-// Aca empiezan las estructuras
+// Estructuras del AST
 
 struct Constant {
 	int value;
 };
 
 struct Program {
-	Block * data;
-	Block * code;
+	DataSeg * dataSeg;
+	CodeSeg * codeSeg;
 };
 
-struct Block {
-	Line** lines;
+struct CodeSeg {
+	CodeBlock * codeBlock;
+};
+
+struct DataSeg {
+	DataBlock * dataBlock;
+};
+
+struct CodeBlock {
+	CodeLine** lines;
     int count;
 };
 
-struct Line {
+struct DataBlock {
+	DataLine** lines;
+    int count;
+};
+
+struct CodeLine {
     LineType type;
     union {
         Instruction* instruction;
@@ -97,14 +111,19 @@ struct Line {
     };
 };
 
-typedef struct Line CodeLine;
-typedef struct Line DataLine;
+struct DataLine {
+    LineType type;
+    union {
+        Instruction* instruction;
+        MacroDef* macro;
+    };
+};
 
 struct MacroDef {
     char* name;
     char** params;   
     int paramCount;
-    Block* body;    
+    CodeBlock* body;    
 };
 
 struct Expr {
@@ -144,8 +163,12 @@ void destroyExpression(Expr *expression);
 void destroyOperand(Operand *operand);
 void destroyInstruction(Instruction *instruction);
 void destroyMacroDef(MacroDef *macro);
-void destroyLine(Line *line);
-void destroyBlock(Block *block);
+void destroyCodeLine(CodeLine *line);
+void destroyDataLine(DataLine *line);
+void destroyCodeBlock(CodeBlock *block);
+void destroyDataBlock(DataBlock *block);
+void destroyCodeSeg(CodeSeg *codeSeg);
+void destroyDataSeg(DataSeg *dataSeg);
 void destroyProgram(Program *program);
 
 #endif

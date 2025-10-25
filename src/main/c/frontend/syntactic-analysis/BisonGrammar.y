@@ -32,15 +32,16 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	/** Non-terminals. */
 	/* AST node pointers used as semantic values */
 	Constant * constant;
-	Block * block;
-	Block * dataBlock;
-	Block * codeBlock;
-	Line * line;
-	Line * dataLine;
-	Line * codeLine;
+	CodeSeg * codeSeg;
+	DataSeg * dataSeg;
+	CodeBlock * codeBlock;
+	DataBlock * dataBlock;
+	CodeLine * codeLine;
+	DataLine * dataLine;
 	Program * program;
 	Instruction * instruction;
 	Operand * operand;
+	Operand ** operandList;
 	char ** idList;
 }
 
@@ -116,11 +117,11 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token>TOK_FLAG_M
 
 
-%token <token> EQU
-%token <token> DB
-%token <token> DW
-%token <token> DEFM
-%token <token> DS
+%token <token> TOK_DATA_EQU
+%token <token> TOK_DATA_DB
+%token <token> TOK_DATA_DW
+%token <token> TOK_DATA_DEFM
+%token <token> TOK_DATA_DS
 
 
 %token <token>COMA
@@ -137,15 +138,20 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token> MACRO
 %token <token> ENDM
 
+%token <token> CSEG
+%token <token> DSEG
+
 %token <token> NEW_LINE
 
 /** Non-terminals. */
 
 %type <operand>   cond
-%type <line>  dataLine
-%type <line>  codeLine
-%type <block> dataBlock
-%type <block> codeBlock
+%type <dataLine>  dataLine
+%type <codeLine>  codeLine
+%type <dataBlock> dataBlock
+%type <codeBlock> codeBlock
+%type <codeSeg>    codeSeg
+%type <dataSeg>    dataSeg
 %type <program>   program
 
 /* estos son necesarios para las reglas de abajo */
@@ -154,6 +160,7 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <instruction> instruction
 %type <codeBlock> macroBody
 %type <idList>    macroParamListOpt macroParamList
+%type <operandList>    exprList
 
 
 /**
@@ -170,8 +177,19 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
 program
-    : codeBlock dataBlock     { $$ = ExpressionProgramSemanticAction($1, $2); }
-    ;
+	: dataSeg codeSeg                { $$ = ExpressionProgramSemanticAction($1, $2); }
+	;
+
+dataSeg
+	: DSEG dataBlock                 { $$ = DataSegSemanticAction($2); }
+	| %empty			             { $$ = DataSegSemanticAction(NULL); }
+	;
+
+codeSeg
+	: CSEG codeBlock                 { $$ = CodeSegSemanticAction($2); }
+	| codeBlock                      { $$ = CodeSegSemanticAction($1); }
+	| %empty                         { $$ = CodeSegSemanticAction(NULL); }
+	;
 
 codeBlock
     : codeBlock codeLine      { $$ = AppendCodeLine($1, $2); }
@@ -184,15 +202,15 @@ dataBlock
     ;
 
 codeLine
-	: macroDef
-	| instruction NEW_LINE
-	| NEW_LINE
+	: macroDef                          { $$ = $1; }
+	| instruction NEW_LINE              { $$ = Z80MakeCodeLineInsn($1); }
+	| NEW_LINE                          { $$ = NULL; }
 	;
 
 dataLine
-	: macroDef
-	| instruction NEW_LINE
-	| NEW_LINE
+	: TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($2); }
+	| TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($2); }
+	| TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($2); }
 	;
 
 macroDef
@@ -301,6 +319,12 @@ mem_abs
 expr
 	: INTEGER                                           { $$ = Z80OpImm($1); }
 	| ID                                         		{ $$ = Z80OpSymbol($1); }
+	;
+
+/* lista de expresiones para declaraciones de datos */
+exprList
+	: expr                                              { $$ = NULL; /* TODO: implementar lista */ }
+	| exprList COMA expr                                { $$ = NULL; /* TODO: implementar lista */ }
 	;
 
 %%

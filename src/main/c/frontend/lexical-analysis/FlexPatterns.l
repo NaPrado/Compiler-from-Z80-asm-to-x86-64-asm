@@ -35,6 +35,7 @@ extern CompilationStatus IdentifierLexemeAction();
 extern CompilationStatus Z80MacroLexemeAction(TokenLabel label);
 extern CompilationStatus DataDeclarationLexemeAction(TokenLabel label);
 extern CompilationStatus NewLineLexemeAction();
+extern CompilationStatus EnterSegmentLexemeAction(int segmentType);
 
 
 %}
@@ -69,6 +70,10 @@ identifier			{letter}({letter}|{digit})*
 %}
 
 ";".*                                  { return CommentLexemeAction(); }
+
+(?i:Cseg)                              { return EnterSegmentLexemeAction(CSEG); }
+(?i:Dseg)                              { return EnterSegmentLexemeAction(DSEG); }
+
 
 (?i:A)                                 { return Z80RegisterLexemeAction(TOK_REG_A); }
 (?i:B)                                 { return Z80RegisterLexemeAction(TOK_REG_B); }
@@ -133,11 +138,10 @@ identifier			{letter}({letter}|{digit})*
 "("									{ return ParenthesisLexemeAction(OPEN_PARENTHESIS); }
 ")"									{ return ParenthesisLexemeAction(CLOSE_PARENTHESIS); }
 
-(?i:equ)                            { return DataDeclarationLexemeAction(EQU); }
-(?i:db)                             { return DataDeclarationLexemeAction(DB); }
-(?i:dw)                             { return DataDeclarationLexemeAction(DW); }
-(?i:defm)                           { return DataDeclarationLexemeAction(DEFM); }
-(?i:ds)                             { return DataDeclarationLexemeAction(DS); }
+(?i:equ)                            { return DataDeclarationLexemeAction(TOK_DATA_EQU); }
+(?i:db)                             { return DataDeclarationLexemeAction(TOK_DATA_DB); }
+(?i:dw)                             { return DataDeclarationLexemeAction(TOK_DATA_DW); }
+(?i:ds)                             { return DataDeclarationLexemeAction(TOK_DATA_DS); }
 
 {identifier}":"                     { return LabelLexemeAction(); }
 {identifier}                        { return IdentifierLexemeAction(); }

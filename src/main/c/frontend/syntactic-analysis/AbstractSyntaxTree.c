@@ -78,12 +78,12 @@ void destroyMacroDef(MacroDef *macro) {
         free(macro->params);
     }
 
-    destroyBlock(macro->body);
+    destroyCodeBlock(macro->body);
 
     free(macro);
 }
 
-void destroyLine(Line *line) {
+void destroyCodeLine(CodeLine *line) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!line) return;
 
@@ -94,18 +94,38 @@ void destroyLine(Line *line) {
         case LINE_MACRO:
             destroyMacroDef(line->macro);
             break;
+        default:
+            break;
     }
 
     free(line);
 }
 
-void destroyBlock(Block *block) {
+void destroyDataLine(DataLine *line) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!line) return;
+
+    switch (line->type) {
+        case LINE_INSTRUCTION:
+            destroyInstruction(line->instruction);
+            break;
+        case LINE_MACRO:
+            destroyMacroDef(line->macro);
+            break;
+        default:
+            break;
+    }
+
+    free(line);
+}
+
+void destroyCodeBlock(CodeBlock *block) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!block) return;
 
     if (block->lines) {
         for (int i = 0; i < block->count; i++) {
-            destroyLine(block->lines[i]);
+            destroyCodeLine(block->lines[i]);
         }
         free(block->lines);
     }
@@ -113,12 +133,44 @@ void destroyBlock(Block *block) {
     free(block);
 }
 
+void destroyDataBlock(DataBlock *block) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!block) return;
+
+    if (block->lines) {
+        for (int i = 0; i < block->count; i++) {
+            destroyDataLine(block->lines[i]);
+        }
+        free(block->lines);
+    }
+
+    free(block);
+}
+
+void destroyCodeSeg(CodeSeg *codeSeg) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!codeSeg) return;
+
+    destroyCodeBlock(codeSeg->codeBlock);
+
+    free(codeSeg);
+}
+
+void destroyDataSeg(DataSeg *dataSeg) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!dataSeg) return;
+
+    destroyDataBlock(dataSeg->dataBlock);
+
+    free(dataSeg);
+}
+
 void destroyProgram(Program *program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!program) return;
 
-    destroyBlock(program->data);
-    destroyBlock(program->code);
+    destroyDataSeg(program->dataSeg);
+    destroyCodeSeg(program->codeSeg);
 
     free(program);
 }

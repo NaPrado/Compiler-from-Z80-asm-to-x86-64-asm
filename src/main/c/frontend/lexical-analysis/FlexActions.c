@@ -84,6 +84,14 @@ CompilationStatus Z80MacroLexemeAction(TokenLabel label) {
 	return status;
 }
 
+CompilationStatus EnterSegmentLexemeAction(TokenLabel label) {
+	Token * token = createToken(_lexicalAnalyzer, label);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}
+
 CompilationStatus EnterInlineCommentLexemeAction(FlexContext context) {
 	if (_logIgnoredLexemes) {
 		Token * token = createToken(_lexicalAnalyzer, OPEN_COMMENT);

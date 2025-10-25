@@ -17,18 +17,23 @@ ModuleDestructor initializeBisonActionsModule();
  */
 
 /* Funciones de construcción del AST */
-Block * AppendCodeLine(Block * block, Line * line);
-Block * CodeBlockInit(Line * line);
-Block * AppendDataLine(Block * block, Line * line);
-Block * DataBlockInit(Line * line);
-Program * ExpressionProgramSemanticAction(Block * codeBlock, Block * dataBlock);
+CodeBlock * AppendCodeLine(CodeBlock * block, CodeLine * line);
+CodeBlock * CodeBlockInit(CodeLine * line);
+DataBlock * AppendDataLine(DataBlock * block, DataLine * line);
+DataBlock * DataBlockInit(DataLine * line);
+CodeSeg * CodeSegSemanticAction(CodeBlock * codeBlock);
+DataSeg * DataSegSemanticAction(DataBlock * dataBlock);
+Program * ExpressionProgramSemanticAction(DataSeg * dataSeg, CodeSeg * codeSeg);
 char ** Z80IdListInit(void);
 char ** Z80IdListInit1(char * id);
 char ** Z80IdListAppend(char ** list, char * id);
-Block * Z80CodeBlockInit(Line * line);
-Block * Z80CodeBlockAppend(Block * block, Line * line);
-Line * Z80MakeCodeLineMacroDef(char * name, char ** params, Block * body);
-Line * Z80MakeCodeLineInsn(Instruction * insn);
+CodeBlock * Z80CodeBlockInit(CodeLine * line);
+CodeBlock * Z80CodeBlockAppend(CodeBlock * block, CodeLine * line);
+CodeLine * Z80MakeCodeLineMacroDef(char * name, char ** params, CodeBlock * body);
+CodeLine * Z80MakeCodeLineInsn(Instruction * insn);
+DataLine * Z80MakeDataLineDb(Operand ** exprList);
+DataLine * Z80MakeDataLineDw(Operand ** exprList);
+DataLine * Z80MakeDataLineDs(Operand * expr);
 
 /* Funciones de construcción de instrucciones */
 Instruction * Z80Insn0(InstructionType type);

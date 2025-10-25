@@ -36,19 +36,33 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-Program * ExpressionProgramSemanticAction(Block * dataBlock, Block * codeBlock) {
+Program * ExpressionProgramSemanticAction(DataSeg * dataSeg, CodeSeg * codeSeg) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->data = dataBlock;
-	program->code = codeBlock;
+	program->dataSeg = dataSeg;
+	program->codeSeg = codeSeg;
 	_compilerState->abstractSyntaxtTree = program;
 	return program;
 }
 
-Block * CodeBlockInit(Line * line) {
-    Block *block = (Block *)calloc(1, sizeof(Block));
+CodeSeg * CodeSegSemanticAction(CodeBlock * codeBlock) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	CodeSeg * codeSeg = calloc(1, sizeof(CodeSeg));
+	codeSeg->codeBlock = codeBlock;
+	return codeSeg;
+}
+
+DataSeg * DataSegSemanticAction(DataBlock * dataBlock) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	DataSeg * dataSeg = calloc(1, sizeof(DataSeg));
+	dataSeg->dataBlock = dataBlock;
+	return dataSeg;
+}
+
+CodeBlock * CodeBlockInit(CodeLine * line) {
+    CodeBlock *block = (CodeBlock *)calloc(1, sizeof(CodeBlock));
     if (line != NULL) {
-        block->lines = (Line **)calloc(1, sizeof(Line *));
+        block->lines = (CodeLine **)calloc(1, sizeof(CodeLine *));
         block->lines[0] = line;
         block->count = 1;
     } else {
@@ -58,28 +72,42 @@ Block * CodeBlockInit(Line * line) {
     return block;
 }
 
-Block * AppendCodeLine(Block * block, Line * line) {
+CodeBlock * AppendCodeLine(CodeBlock * block, CodeLine * line) {
     if (line != NULL) {
-        block->lines = (Line **)realloc(block->lines, sizeof(Line *) * (block->count + 1));
+        block->lines = (CodeLine **)realloc(block->lines, sizeof(CodeLine *) * (block->count + 1));
         block->lines[block->count] = line;
         block->count++;
     }
     return block;
 }
 
-Block * DataBlockInit(Line * line) {
+DataBlock * DataBlockInit(DataLine * line) {
+    DataBlock *block = (DataBlock *)calloc(1, sizeof(DataBlock));
+    if (line != NULL) {
+        block->lines = (DataLine **)calloc(1, sizeof(DataLine *));
+        block->lines[0] = line;
+        block->count = 1;
+    } else {
+        block->lines = NULL;
+        block->count = 0;
+    }
+    return block;
+}
+
+DataBlock * AppendDataLine(DataBlock * block, DataLine * line) {
+    if (line != NULL) {
+        block->lines = (DataLine **)realloc(block->lines, sizeof(DataLine *) * (block->count + 1));
+        block->lines[block->count] = line;
+        block->count++;
+    }
+    return block;
+}
+
+CodeBlock * Z80CodeBlockInit(CodeLine * line) {
     return CodeBlockInit(line);
 }
 
-Block * AppendDataLine(Block * block, Line * line) {
-    return AppendCodeLine(block, line);
-}
-
-Block * Z80CodeBlockInit(Line * line) {
-    return CodeBlockInit(line);
-}
-
-Block * Z80CodeBlockAppend(Block * block, Line * line) {
+CodeBlock * Z80CodeBlockAppend(CodeBlock * block, CodeLine * line) {
     return AppendCodeLine(block, line);
 }
 
@@ -90,8 +118,8 @@ static int countParams(char **params) {
     return count;
 }
 
-Line * Z80MakeCodeLineMacroDef(char * name, char ** params, Block * body) {
-    Line *line = (Line *)calloc(1, sizeof(Line));
+CodeLine * Z80MakeCodeLineMacroDef(char * name, char ** params, CodeBlock * body) {
+    CodeLine *line = (CodeLine *)calloc(1, sizeof(CodeLine));
     line->type = LINE_MACRO;
     
     MacroDef *macro = (MacroDef *)calloc(1, sizeof(MacroDef));
@@ -104,10 +132,34 @@ Line * Z80MakeCodeLineMacroDef(char * name, char ** params, Block * body) {
     return line;
 }
 
-Line * Z80MakeCodeLineInsn(Instruction * insn) {
-    Line *line = (Line *)calloc(1, sizeof(Line));
+CodeLine * Z80MakeCodeLineInsn(Instruction * insn) {
+    CodeLine *line = (CodeLine *)calloc(1, sizeof(CodeLine));
     line->type = LINE_INSTRUCTION;
     line->instruction = insn;
+    return line;
+}
+
+DataLine * Z80MakeDataLineDb(Operand ** exprList) {
+    DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->type = LINE_INSTRUCTION;
+    // TODO: Implementar la lógica específica para DB
+    line->instruction = NULL;
+    return line;
+}
+
+DataLine * Z80MakeDataLineDw(Operand ** exprList) {
+    DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->type = LINE_INSTRUCTION;
+    // TODO: Implementar la lógica específica para DW
+    line->instruction = NULL;
+    return line;
+}
+
+DataLine * Z80MakeDataLineDs(Operand * expr) {
+    DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->type = LINE_INSTRUCTION;
+    // TODO: Implementar la lógica específica para DS
+    line->instruction = NULL;
     return line;
 }
 
