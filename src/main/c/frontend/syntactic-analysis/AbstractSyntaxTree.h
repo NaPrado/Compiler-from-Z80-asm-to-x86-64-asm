@@ -72,6 +72,7 @@ enum OperandType{
 enum LineType{
    	LINE_INSTRUCTION, 
     LINE_MACRO,
+    LINE_LABEL,
     LINE_EMPTY
 };
 
@@ -115,6 +116,7 @@ struct CodeLine {
     union {
         Instruction* instruction;
         MacroDef* macro;
+        char* label;
     };
 };
 

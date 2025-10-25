@@ -44,6 +44,12 @@ void destroyOperand(Operand *operand) {
         case OPERAND_CONSTANT:
             destroyExpression(operand->expr);
             break;
+        case OPERAND_MEMORY_IXIY_DISP:
+            destroyExpression(operand->mem_ixiy_disp.disp);
+            break;
+        case OPERAND_MEMORY_ABS:
+            destroyExpression(operand->mem_abs);
+            break;
         default:
             break;
     }
@@ -94,6 +100,9 @@ void destroyCodeLine(CodeLine *line) {
         case LINE_MACRO:
             destroyMacroDef(line->macro);
             break;
+        case LINE_LABEL:
+            free(line->label);
+            break;
         default:
             break;
     }
@@ -105,7 +114,6 @@ void destroyDataLine(DataLine *line) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!line) return;
 
-    // Free the values array and each operand
     if (line->values) {
         for (int i = 0; i < line->valueCount; i++) {
             destroyOperand(line->values[i]);

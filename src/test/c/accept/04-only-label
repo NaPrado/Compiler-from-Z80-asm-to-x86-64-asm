@@ -1,0 +1,4 @@
+Cseg
+LOOP:
+ADD A
+JP LOOP

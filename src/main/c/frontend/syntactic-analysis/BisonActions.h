@@ -31,6 +31,7 @@ CodeBlock * Z80CodeBlockInit(CodeLine * line);
 CodeBlock * Z80CodeBlockAppend(CodeBlock * block, CodeLine * line);
 CodeLine * Z80MakeCodeLineMacroDef(char * name, char ** params, CodeBlock * body);
 CodeLine * Z80MakeCodeLineInsn(Instruction * insn);
+CodeLine * Z80MakeCodeLineLabel(char * label);
 DataLine * Z80MakeDataLineDb(Operand ** exprList);
 DataLine * Z80MakeDataLineDw(Operand ** exprList);
 DataLine * Z80MakeDataLineDs(Operand * expr);

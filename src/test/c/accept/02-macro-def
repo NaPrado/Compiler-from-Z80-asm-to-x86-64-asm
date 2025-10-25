@@ -1,0 +1,4 @@
+Cseg
+MYMACRO MACRO param1, param2
+NOP
+ENDM

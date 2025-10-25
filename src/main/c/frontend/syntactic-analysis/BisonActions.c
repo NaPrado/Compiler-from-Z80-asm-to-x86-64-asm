@@ -129,6 +129,9 @@ CodeLine * Z80MakeCodeLineMacroDef(char * name, char ** params, CodeBlock * body
     macro->body = body;
     
     line->macro = macro;
+    
+    free(name);
+    
     return line;
 }
 
@@ -139,16 +142,23 @@ CodeLine * Z80MakeCodeLineInsn(Instruction * insn) {
     return line;
 }
 
+CodeLine * Z80MakeCodeLineLabel(char * label) {
+    CodeLine *line = (CodeLine *)calloc(1, sizeof(CodeLine));
+    line->type = LINE_LABEL;
+    line->label = strdup(label);
+    
+    free(label);
+    
+    return line;
+}
+
 DataLine * Z80MakeDataLineDb(Operand ** exprList) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
     line->dataType = DATA_DB;
     line->values = exprList;
     line->valueCount = 0;
     
-    // Count the values in the list (if implemented)
-    // For now, since exprList is NULL from grammar, set to 0
     if (exprList) {
-        // TODO: When exprList is properly implemented, count elements
         while (exprList[line->valueCount] != NULL) {
             line->valueCount++;
         }
@@ -201,6 +211,9 @@ char ** Z80IdListInit1(char * id) {
     char **list = (char **)calloc(2, sizeof(char *));
     list[0] = strdup(id);
     list[1] = NULL;
+    
+    free(id);
+    
     return list;
 }
 
@@ -209,6 +222,9 @@ char ** Z80IdListAppend(char ** list, char * id) {
     list = (char **)realloc(list, sizeof(char *) * (count + 2));
     list[count] = strdup(id);
     list[count + 1] = NULL;
+    
+    free(id);
+    
     return list;
 }
 
@@ -277,6 +293,8 @@ Operand * Z80OpMemIdxDisp(RegisterName reg, Operand * disp) {
     }
     op->mem_ixiy_disp.disp = expr;
     
+    destroyOperand(disp);
+    
     return op;
 }
 
@@ -297,6 +315,8 @@ Operand * Z80OpMemAbs(Operand * addr) {
     }
     op->mem_abs = expr;
     
+    destroyOperand(addr);
+    
     return op;
 }
 
@@ -314,6 +334,9 @@ Operand * Z80OpSymbol(char * symbol) {
     Operand *op = (Operand *)calloc(1, sizeof(Operand));
     op->type = OPERAND_SYMBOL;
     op->symbol = strdup(symbol);
+    
+    free(symbol);
+    
     return op;
 }
 

@@ -62,7 +62,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { if ($$) destroyDataBlock($$); } <dataBlock>
 %destructor { if ($$) destroyCodeSeg($$); } <codeSeg>
 %destructor { if ($$) destroyDataSeg($$); } <dataSeg>
-// NOTE: No destructor for <program> - we manually call destroyProgram() in EntryPoint.c
 
 %destructor { 
     if ($$) {
@@ -199,6 +198,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %left ADD SUB
 %left MUL DIV
 
+%expect 1
+
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
@@ -231,18 +232,15 @@ dataBlock
 codeLine
 	: macroDef                          { $$ = $1; }
 	| instruction NEW_LINE              { $$ = Z80MakeCodeLineInsn($1); }
-	| instruction                       { $$ = Z80MakeCodeLineInsn($1); }  // ← AGREGAR
+	| LABEL                             { $$ = Z80MakeCodeLineLabel($1); }
 	| NEW_LINE                          { $$ = NULL; }
 	;
 
 
 dataLine
 	: TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($2); }
-	| TOK_DATA_DB exprList                 { $$ = Z80MakeDataLineDb($2); }  // ← AGREGAR
 	| TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($2); }
-	| TOK_DATA_DW exprList                 { $$ = Z80MakeDataLineDw($2); }  // ← AGREGAR
 	| TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($2); }
-	| TOK_DATA_DS expr                     { $$ = Z80MakeDataLineDs($2); }  // ← AGREGAR
 	| NEW_LINE                             { $$ = NULL; }
 	;
 
