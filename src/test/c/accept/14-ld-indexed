@@ -1,0 +1,6 @@
+Cseg
+LD A, (IX + 0)
+LD B, (IX + 10)
+LD C, (IY + 5)
+LD (IX + 1), A
+LD (IY + 2), B

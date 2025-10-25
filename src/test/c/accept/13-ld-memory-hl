@@ -1,0 +1,5 @@
+Cseg
+LD A, (HL)
+LD B, (HL)
+LD (HL), A
+LD (HL), C

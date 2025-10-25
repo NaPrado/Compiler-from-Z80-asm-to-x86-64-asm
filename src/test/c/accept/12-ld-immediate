@@ -1,0 +1,6 @@
+Cseg
+LD A, 0xFF
+LD B, 0x10
+LD C, 42
+LD D, 255
+LD E, 0
