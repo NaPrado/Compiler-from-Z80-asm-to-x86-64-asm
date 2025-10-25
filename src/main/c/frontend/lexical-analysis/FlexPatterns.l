@@ -16,6 +16,7 @@
 
 extern CompilationStatus ArithmeticOperatorLexemeAction(TokenLabel label);
 extern CompilationStatus EnterImportExpressionLexemeAction(FlexContext context);
+extern CompilationStatus CommentLexemeAction();
 extern CompilationStatus EnterInlineCommentLexemeAction(FlexContext context);
 extern CompilationStatus EOFLexemeAction();
 extern CompilationStatus IgnoredLexemeAction();
@@ -25,6 +26,14 @@ extern CompilationStatus LeaveInlineCommentLexemeAction();
 extern CompilationStatus ParenthesisLexemeAction(TokenLabel label);
 extern CompilationStatus SubexpressionLexemeAction();
 extern CompilationStatus UnknownLexemeAction();
+extern CompilationStatus Z80RegisterLexemeAction(TokenLabel label);
+extern CompilationStatus Z80InstructionLexemeAction(TokenLabel label);
+extern CompilationStatus ComaLexemeAction(TokenLabel label);
+extern CompilationStatus PlusLexemeAction(TokenLabel label);
+extern CompilationStatus LabelLexemeAction();
+extern CompilationStatus IdentifierLexemeAction();
+extern CompilationStatus Z80MacroLexemeAction(TokenLabel label);
+
 
 %}
 

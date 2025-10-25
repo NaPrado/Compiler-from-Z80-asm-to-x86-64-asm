@@ -25,7 +25,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 
 %union {
 	/** Terminals. */
-
 	signed int integer;
 	char * string;
 	TokenLabel token;
@@ -33,13 +32,16 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	/** Non-terminals. */
 	/* AST node pointers used as semantic values */
 	Constant * constant;
+	Block * block;
 	Block * dataBlock;
 	Block * codeBlock;
+	Line * line;
 	Line * dataLine;
 	Line * codeLine;
-	DataSeg * dataSeg;
-	CodeSeg * codeSeg;
 	Program * program;
+	Instruction * instruction;
+	Operand * operand;
+	char ** idList;
 }
 
 /**
@@ -140,10 +142,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 /** Non-terminals. */
 
 %type <operand>   cond
-%type <Line>  dataLine
-%type <Line>  codeLine
-%type <Block> dataBlock
-%type <Block> codeBlock
+%type <line>  dataLine
+%type <line>  codeLine
+%type <block> dataBlock
+%type <block> codeBlock
 %type <program>   program
 
 /* estos son necesarios para las reglas de abajo */
@@ -227,7 +229,7 @@ instruction
 	| TOK_OP_JP  operand                                        { $$ = Z80Insn1(INST_JP,  $2); }
 	| TOK_OP_JP	 cond COMA operand								{ $$ = Z80Insn2(INST_JP, $2, $4); }
 	| TOK_OP_JR  operand                                        { $$ = Z80Insn1(INST_JR,  $2); }
-	| TOK_OP_JR  cond COMA operand                             { $$ = Z80Insn1(INST_JR,  $2, $4); }
+	| TOK_OP_JR  cond COMA operand                             { $$ = Z80Insn2(INST_JR,  $2, $4); }
 	| TOK_OP_DJNZ  operand                                      { $$ = Z80Insn1(INST_DJNZ,  $2); }
 	| TOK_OP_CALL operand                                       { $$ = Z80Insn1(INST_CALL,$2); }
 	| TOK_OP_RET                                                { $$ = Z80Insn0(INST_RET); }
