@@ -180,12 +180,13 @@ CompilationStatus ParenthesisLexemeAction(TokenLabel label) {
 }
 
 CompilationStatus NewLineLexemeAction() {
+	Token * token = createToken(_lexicalAnalyzer, NEW_LINE);
 	if (_logIgnoredLexemes) {
-		Token * token = createToken(_lexicalAnalyzer, NEW_LINE);
 		_logTokenAction(__FUNCTION__, token);
-		destroyToken(token);
 	}
-	return IN_PROGRESS;
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
 }
 
 CompilationStatus ComaLexemeAction(TokenLabel label) {
