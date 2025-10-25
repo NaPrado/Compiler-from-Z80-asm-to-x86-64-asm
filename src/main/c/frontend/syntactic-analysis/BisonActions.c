@@ -45,50 +45,205 @@ Program * ExpressionProgramSemanticAction(Block * dataBlock, Block * codeBlock) 
 	return program;
 }
 
+Block * CodeBlockInit(Line * line) {
+    Block *block = (Block *)calloc(1, sizeof(Block));
+    if (line != NULL) {
+        block->lines = (Line **)calloc(1, sizeof(Line *));
+        block->lines[0] = line;
+        block->count = 1;
+    } else {
+        block->lines = NULL;
+        block->count = 0;
+    }
+    return block;
+}
+
+Block * AppendCodeLine(Block * block, Line * line) {
+    if (line != NULL) {
+        block->lines = (Line **)realloc(block->lines, sizeof(Line *) * (block->count + 1));
+        block->lines[block->count] = line;
+        block->count++;
+    }
+    return block;
+}
+
+Block * DataBlockInit(Line * line) {
+    return CodeBlockInit(line);
+}
+
+Block * AppendDataLine(Block * block, Line * line) {
+    return AppendCodeLine(block, line);
+}
+
+Block * Z80CodeBlockInit(Line * line) {
+    return CodeBlockInit(line);
+}
+
+Block * Z80CodeBlockAppend(Block * block, Line * line) {
+    return AppendCodeLine(block, line);
+}
+
+static int countParams(char **params) {
+    if (!params) return 0;
+    int count = 0;
+    while (params[count] != NULL) count++;
+    return count;
+}
+
+Line * Z80MakeCodeLineMacroDef(char * name, char ** params, Block * body) {
+    Line *line = (Line *)calloc(1, sizeof(Line));
+    line->type = LINE_MACRO;
+    
+    MacroDef *macro = (MacroDef *)calloc(1, sizeof(MacroDef));
+    macro->name = strdup(name);
+    macro->params = params;
+    macro->paramCount = countParams(params);
+    macro->body = body;
+    
+    line->macro = macro;
+    return line;
+}
+
+Line * Z80MakeCodeLineInsn(Instruction * insn) {
+    Line *line = (Line *)calloc(1, sizeof(Line));
+    line->type = LINE_INSTRUCTION;
+    line->instruction = insn;
+    return line;
+}
+
+char ** Z80IdListInit(void) {
+    char **list = (char **)calloc(1, sizeof(char *));
+    list[0] = NULL;
+    return list;
+}
+
+char ** Z80IdListInit1(char * id) {
+    char **list = (char **)calloc(2, sizeof(char *));
+    list[0] = strdup(id);
+    list[1] = NULL;
+    return list;
+}
+
+char ** Z80IdListAppend(char ** list, char * id) {
+    int count = countParams(list);
+    list = (char **)realloc(list, sizeof(char *) * (count + 2));
+    list[count] = strdup(id);
+    list[count + 1] = NULL;
+    return list;
+}
+
+Instruction * Z80Insn0(InstructionType type) {
+    Instruction *insn = (Instruction *)calloc(1, sizeof(Instruction));
+    insn->type = type;
+    insn->operands = NULL;
+    insn->operandCount = 0;
+    return insn;
+}
+
+Instruction * Z80Insn1(InstructionType type, Operand * op) {
+    Instruction *insn = (Instruction *)calloc(1, sizeof(Instruction));
+    insn->type = type;
+    insn->operands = (Operand **)calloc(1, sizeof(Operand *));
+    insn->operands[0] = op;
+    insn->operandCount = 1;
+    return insn;
+}
+
+Instruction * Z80Insn2(InstructionType type, Operand * op1, Operand * op2) {
+    Instruction *insn = (Instruction *)calloc(1, sizeof(Instruction));
+    insn->type = type;
+    insn->operands = (Operand **)calloc(2, sizeof(Operand *));
+    insn->operands[0] = op1;
+    insn->operands[1] = op2;
+    insn->operandCount = 2;
+    return insn;
+}
+
+Operand * Z80OpReg8(RegisterName reg) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_REGISTER8;
+    op->reg8 = reg;
+    return op;
+}
+
+Operand * Z80OpReg16(RegisterName reg) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_REGISTER16;
+    op->reg16 = reg;
+    return op;
+}
+
+Operand * Z80OpMemHL(void) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_MEMORY_HL;
+    return op;
+}
+
+Operand * Z80OpMemIdxDisp(RegisterName reg, Operand * disp) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_MEMORY_IXIY_DISP;
+    op->mem_ixiy_disp.base = reg;
+    
+    Expr *expr = (Expr *)calloc(1, sizeof(Expr));
+    if (disp->type == OPERAND_CONSTANT) {
+        expr->value = disp->constantValue;
+        expr->symbol = NULL;
+    } else if (disp->type == OPERAND_SYMBOL) {
+        expr->value = 0;
+        expr->symbol = strdup(disp->symbol);
+    } else {
+        expr->value = 0;
+        expr->symbol = NULL;
+    }
+    op->mem_ixiy_disp.disp = expr;
+    
+    return op;
+}
+
+Operand * Z80OpMemAbs(Operand * addr) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_MEMORY_ABS;
+    
+    Expr *expr = (Expr *)calloc(1, sizeof(Expr));
+    if (addr->type == OPERAND_CONSTANT) {
+        expr->value = addr->constantValue;
+        expr->symbol = NULL;
+    } else if (addr->type == OPERAND_SYMBOL) {
+        expr->value = 0;
+        expr->symbol = strdup(addr->symbol);
+    } else {
+        expr->value = 0;
+        expr->symbol = NULL;
+    }
+    op->mem_abs = expr;
+    
+    return op;
+}
+
+Operand * Z80OpImm(int value) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_CONSTANT;
+    op->constantValue = value;
+    return op;
+}
+
+Operand * Z80OpSymbol(char * symbol) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_SYMBOL;
+    op->symbol = strdup(symbol);
+    return op;
+}
+
+Operand * Z80OpCond(ConditionType cond) {
+    Operand *op = (Operand *)calloc(1, sizeof(Operand));
+    op->type = OPERAND_CONDITION;
+    op->condition = cond;
+    return op;
+}
+
 Constant * IntegerConstantSemanticAction(const int value) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Constant * constant = calloc(1, sizeof(Constant));
 	constant->value = value;
 	return constant;
 }
-
-// Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Expression * expression = calloc(1, sizeof(Expression));
-// 	expression->leftExpression = leftExpression;
-// 	expression->rightExpression = rightExpression;
-// 	expression->type = type;
-// 	return expression;
-// }
-
-// Expression * FactorExpressionSemanticAction(Factor * factor) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Expression * expression = calloc(1, sizeof(Expression));
-// 	expression->factor = factor;
-// 	expression->type = FACTOR;
-// 	return expression;
-// }
-
-// Factor * ConstantFactorSemanticAction(Constant * constant) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Factor * factor = calloc(1, sizeof(Factor));
-// 	factor->constant = constant;
-// 	factor->type = CONSTANT;
-// 	return factor;
-// }
-
-// Factor * ExpressionFactorSemanticAction(Expression * expression) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Factor * factor = calloc(1, sizeof(Factor));
-// 	factor->expression = expression;
-// 	factor->type = EXPRESSION;
-// 	return factor;
-// }
-
-// Program * ExpressionProgramSemanticAction(Expression * expression) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Program * program = calloc(1, sizeof(Program));
-// 	program->expression = expression;
-// 	_compilerState->abstractSyntaxtTree = program;
-// 	return program;
-// }

@@ -33,6 +33,8 @@ extern CompilationStatus PlusLexemeAction(TokenLabel label);
 extern CompilationStatus LabelLexemeAction();
 extern CompilationStatus IdentifierLexemeAction();
 extern CompilationStatus Z80MacroLexemeAction(TokenLabel label);
+extern CompilationStatus DataDeclarationLexemeAction(TokenLabel label);
+extern CompilationStatus NewLineLexemeAction();
 
 
 %}

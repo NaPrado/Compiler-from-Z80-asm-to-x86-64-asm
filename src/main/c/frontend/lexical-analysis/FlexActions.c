@@ -68,6 +68,14 @@ CompilationStatus Z80InstructionLexemeAction(TokenLabel label) {
 	return status;
 }
 
+CompilationStatus DataDeclarationLexemeAction(TokenLabel label) {
+	Token * token = createToken(_lexicalAnalyzer, label);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	destroyToken(token);
+	return status;
+}
+
 CompilationStatus Z80MacroLexemeAction(TokenLabel label) {
 	Token * token = createToken(_lexicalAnalyzer, label);
 	_logTokenAction(__FUNCTION__, token);
@@ -161,6 +169,15 @@ CompilationStatus ParenthesisLexemeAction(TokenLabel label) {
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
 	destroyToken(token);
 	return status;
+}
+
+CompilationStatus NewLineLexemeAction() {
+	if (_logIgnoredLexemes) {
+		Token * token = createToken(_lexicalAnalyzer, NEW_LINE);
+		_logTokenAction(__FUNCTION__, token);
+		destroyToken(token);
+	}
+	return IN_PROGRESS;
 }
 
 CompilationStatus ComaLexemeAction(TokenLabel label) {
