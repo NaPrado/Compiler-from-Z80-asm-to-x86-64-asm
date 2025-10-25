@@ -27,44 +27,98 @@ void destroyConstant(Constant * constant) {
 	}
 }
 
-void destroyExpression(Expression * expression) {
+void destroyExpression(Expr *expression) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (expression != NULL) {
-		switch (expression->type) {
-			case ADDITION:
-			case DIVISION:
-			case MULTIPLICATION:
-			case SUBTRACTION:
-				destroyExpression(expression->leftExpression);
-				destroyExpression(expression->rightExpression);
-				break;
-			case FACTOR:
-				destroyFactor(expression->factor);
-				break;
-		}
-		free(expression);
-	}
+    if (!expression) return;
+    free(expression);
 }
 
-void destroyFactor(Factor * factor) {
+void destroyOperand(Operand *operand) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (factor != NULL) {
-		switch (factor->type) {
-			case CONSTANT:
-				destroyConstant(factor->constant);
-				break;
-			case EXPRESSION:
-				destroyExpression(factor->expression);
-				break;
-		}
-		free(factor);
-	}
+    if (!operand) return;
+
+    switch (operand->type) {
+        case OPERAND_SYMBOL:
+            free(operand->symbol);
+            break;
+        case OPERAND_CONSTANT:
+            destroyExpression(operand->expr);
+            break;
+        default:
+            break;
+    }
+
+    free(operand);
 }
 
-void destroyProgram(Program * program) {
+void destroyInstruction(Instruction *instruction) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (program != NULL) {
-		destroyExpression(program->expression);
-		free(program);
-	}
+    if (!instruction) return;
+
+    if (instruction->operands) {
+        for (int i = 0; i < instruction->operandCount; i++) {
+            destroyOperand(instruction->operands[i]);
+        }
+        free(instruction->operands);
+    }
+
+    free(instruction);
+}
+
+void destroyMacroDef(MacroDef *macro) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!macro) return;
+
+    free(macro->name);
+
+    if (macro->params) {
+        for (int i = 0; i < macro->paramCount; i++) {
+            free(macro->params[i]);
+        }
+        free(macro->params);
+    }
+
+    destroyBlock(macro->body);
+
+    free(macro);
+}
+
+void destroyLine(Line *line) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!line) return;
+
+    switch (line->type) {
+        case LINE_INSTRUCTION:
+            destroyInstruction(line->instruction);
+            break;
+        case LINE_MACRO:
+            destroyMacroDef(line->macro);
+            break;
+    }
+
+    free(line);
+}
+
+void destroyBlock(Block *block) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!block) return;
+
+    if (block->lines) {
+        for (int i = 0; i < block->count; i++) {
+            destroyLine(block->lines[i]);
+        }
+        free(block->lines);
+    }
+
+    free(block);
+}
+
+void destroyProgram(Program *program) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+    if (!program) return;
+
+    destroyBlock(program->data);
+    destroyBlock(program->code);
+
+    free(program);
 }

@@ -14,15 +14,23 @@ ModuleDestructor initializeAbstractSyntaxTreeModule();
  * person, but without the madness).
  */
 
-typedef enum InstructionType ExpressionType;
-typedef enum RegisterName FactorType;
+typedef enum InstructionType InstructionType;
+typedef enum RegisterName RegisterName;
 typedef enum ConditionType ConditionType;
+typedef enum LineType LineType;
+typedef enum OperandType OperandType;
 
-typedef struct Program Program;
-typedef struct CodeBlock CodeBlock;
-typedef struct DataBlock DataBlock;
 typedef struct Constant Constant;
-typedef struct DataLine DataLine;
+typedef struct Program Program;
+typedef struct Block Block;
+typedef struct Line Line;
+typedef struct MacroDef MacroDef;
+typedef struct NewLine NewLine;
+typedef struct Instruction Instruction;
+typedef struct Operand Operand;
+typedef struct Reg8 Reg8;
+typedef struct Reg16 Reg16;
+typedef struct Expr Expr;
 
 
 /**
@@ -48,30 +56,96 @@ enum ConditionType{
     COND_PO, COND_PE, COND_P, COND_M
 };
 
+enum OperandType{
+    OPERAND_REGISTER8,
+    OPERAND_REGISTER16,
+    OPERAND_CONSTANT,
+    OPERAND_CONDITION,
+    OPERAND_MEMORY_HL,
+    OPERAND_MEMORY_IXIY_DISP,
+    OPERAND_MEMORY_ABS,
+    OPERAND_SYMBOL
+};
+
+enum LineType{
+   	LINE_INSTRUCTION,
+    LINE_MACRO,
+    LINE_EMPTY
+};
+
+// Aca empiezan las estructuras
+
 struct Constant {
 	int value;
 };
 
 struct Program {
-	union {
-		DataSeg * data_seg;
-		CodeSeg * code_seg;
-	};
+	Block * data;
+	Block * code;
 };
 
-struct DataBlock {
+struct Block {
+	Line** lines;
+    int count;
 };
 
-struct CodeBlock {
+struct Line {
+    LineType type;
+    union {
+        Instruction* instruction;
+        MacroDef* macro;
+    };
+};
+
+typedef struct Line CodeLine;
+typedef struct Line DataLine;
+
+struct MacroDef {
+    char* name;
+    char** params;   
+    int paramCount;
+    Block* body;    
+};
+
+struct Expr {
+    int value;      
+    char *symbol;  
+};
+
+struct Instruction {
+    InstructionType type;
+    Operand** operands;
+    int operandCount;
+};
+
+struct Operand {
+    OperandType type;
+    union {
+        RegisterName reg8;
+        RegisterName reg16;
+        int constantValue;
+        ConditionType condition;
+        char *symbol;
+        Expr *expr; 
+        struct {
+            RegisterName base;
+            Expr *disp;
+        } mem_ixiy_disp;
+        Expr *mem_abs;
+    };
 };
 
 /**
  * Node recursive super-duper-trambolik-destructors.
  */
 
-void destroyConstant(Constant * constant);
-void destroyExpression(Expression * expression);
-void destroyFactor(Factor * factor);
-void destroyProgram(Program * program);
+void destroyConstant(Constant *constant);
+void destroyExpression(Expr *expression);
+void destroyOperand(Operand *operand);
+void destroyInstruction(Instruction *instruction);
+void destroyMacroDef(MacroDef *macro);
+void destroyLine(Line *line);
+void destroyBlock(Block *block);
+void destroyProgram(Program *program);
 
 #endif

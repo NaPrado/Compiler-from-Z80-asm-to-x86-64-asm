@@ -33,12 +33,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 	/** Non-terminals. */
 	/* AST node pointers used as semantic values */
 	Constant * constant;
-	Factor * factor;
-	Expression * expression;
-
-	DataBlock * dataBlock;
-	DataLine * dataLine;
-	CodeBlock * codeBlock;
+	Block * dataBlock;
+	Block * codeBlock;
+	Line * dataLine;
+	Line * codeLine;
 	DataSeg * dataSeg;
 	CodeSeg * codeSeg;
 	Program * program;
@@ -52,9 +50,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-%destructor { destroyConstant($$); } <constant>
-%destructor { destroyExpression($$); } <expression>
-%destructor { destroyFactor($$); } <factor>
+/**%destructor { destroyConstant($$); } <constant> */
+
 
 /** Terminals. */
 %token <integer> INTEGER
@@ -75,6 +72,8 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %token <token>TOK_REG_SP
 %token <token>TOK_REG_IY
 %token <token>TOK_REG_IX
+%token <token>TOK_REG_DE
+
 
 
 %token <token>TOK_OP_ADD
@@ -141,12 +140,10 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 /** Non-terminals. */
 
 %type <operand>   cond
-%type <dataLine>  dataLine
-%type <codeLine>  codeLine
-%type <dataBlock> dataBlock
-%type <codeBlock> codeBlock
-%type <dataSeg>   dataSeg
-%type <codeSeg>   codeSeg
+%type <Line>  dataLine
+%type <Line>  codeLine
+%type <Block> dataBlock
+%type <Block> codeBlock
 %type <program>   program
 
 /* estos son necesarios para las reglas de abajo */
@@ -156,9 +153,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <codeBlock> macroBody
 %type <idList>    macroParamListOpt macroParamList
 
-/* Asegurate de tener también los tokens: */
-%token <token> MACRO ENDM
-%token <string> ID
 
 /**
  * Precedence and associativity.
@@ -210,7 +204,7 @@ macroParamListOpt
 
 macroParamList
 	: ID                      { $$ = Z80IdListInit1($1); }
-	| macroParamList COMMA ID { $$ = Z80IdListAppend($1, $3); }
+	| macroParamList COMA ID { $$ = Z80IdListAppend($1, $3); }
 	;
 
 macroBody
@@ -221,7 +215,7 @@ macroBody
 
 
 instruction
-	: TOK_OP_LD  operand COMMA operand                          { $$ = Z80Insn2(INST_LD,  $2, $4); }
+	: TOK_OP_LD  operand COMA operand                          { $$ = Z80Insn2(INST_LD,  $2, $4); }
 	| TOK_OP_ADD operand                                        { $$ = Z80Insn1(INST_ADD, $2); }
 	| TOK_OP_SUB operand                                        { $$ = Z80Insn1(INST_SUB, $2); }
 	| TOK_OP_INC operand                                        { $$ = Z80Insn1(INST_INC, $2); }
@@ -231,9 +225,9 @@ instruction
 	| TOK_OP_XOR operand                                        { $$ = Z80Insn1(INST_XOR, $2); }
 	| TOK_OP_CP  operand                                        { $$ = Z80Insn1(INST_CP,  $2); }
 	| TOK_OP_JP  operand                                        { $$ = Z80Insn1(INST_JP,  $2); }
-	| TOK_OP_JP	 cond COMMA operand								{ $$ = Z80Insn1(INST_JP, $2, $4) }
+	| TOK_OP_JP	 cond COMA operand								{ $$ = Z80Insn2(INST_JP, $2, $4); }
 	| TOK_OP_JR  operand                                        { $$ = Z80Insn1(INST_JR,  $2); }
-	| TOK_OP_JR  cond COMMA operand                             { $$ = Z80Insn1(INST_JR,  $2, $4); }
+	| TOK_OP_JR  cond COMA operand                             { $$ = Z80Insn1(INST_JR,  $2, $4); }
 	| TOK_OP_DJNZ  operand                                      { $$ = Z80Insn1(INST_DJNZ,  $2); }
 	| TOK_OP_CALL operand                                       { $$ = Z80Insn1(INST_CALL,$2); }
 	| TOK_OP_RET                                                { $$ = Z80Insn0(INST_RET); }
@@ -303,8 +297,8 @@ mem_abs
 
 /* inmediatos o símbolos */
 expr
-	: INTEGER                                            { $$ = Z80OpImm($1); }
-	| ID                                         { $$ = Z80OpSymbol($1); }
+	: INTEGER                                           { $$ = Z80OpImm($1); }
+	| ID                                         		{ $$ = Z80OpSymbol($1); }
 	;
 
 %%
