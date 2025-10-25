@@ -141,25 +141,53 @@ CodeLine * Z80MakeCodeLineInsn(Instruction * insn) {
 
 DataLine * Z80MakeDataLineDb(Operand ** exprList) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
-    line->type = LINE_INSTRUCTION;
-    // TODO: Implementar la lógica específica para DB
-    line->instruction = NULL;
+    line->dataType = DATA_DB;
+    line->values = exprList;
+    line->valueCount = 0;
+    
+    // Count the values in the list (if implemented)
+    // For now, since exprList is NULL from grammar, set to 0
+    if (exprList) {
+        // TODO: When exprList is properly implemented, count elements
+        while (exprList[line->valueCount] != NULL) {
+            line->valueCount++;
+        }
+    }
+    
     return line;
 }
 
 DataLine * Z80MakeDataLineDw(Operand ** exprList) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
-    line->type = LINE_INSTRUCTION;
-    // TODO: Implementar la lógica específica para DW
-    line->instruction = NULL;
+    line->dataType = DATA_DW;
+    line->values = exprList;
+    line->valueCount = 0;
+    
+    // Count the values in the list (if implemented)
+    if (exprList) {
+        while (exprList[line->valueCount] != NULL) {
+            line->valueCount++;
+        }
+    }
+    
     return line;
 }
 
 DataLine * Z80MakeDataLineDs(Operand * expr) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
-    line->type = LINE_INSTRUCTION;
-    // TODO: Implementar la lógica específica para DS
-    line->instruction = NULL;
+    line->dataType = DATA_DS;
+    
+    // DS takes a single expression for size
+    if (expr) {
+        line->values = (Operand **)calloc(1, sizeof(Operand *));
+        line->values[0] = expr;
+        line->valueCount = 1;
+    } else {
+        line->values = NULL;
+        line->valueCount = 0;
+    }
+    
+    return line;
     return line;
 }
 
@@ -291,6 +319,33 @@ Operand * Z80OpCond(ConditionType cond) {
     op->type = OPERAND_CONDITION;
     op->condition = cond;
     return op;
+}
+
+Operand ** Z80ExprListInit(Operand * expr) {
+    // Create array with 2 elements: the expr and NULL terminator
+    Operand ** list = (Operand **)calloc(2, sizeof(Operand *));
+    list[0] = expr;
+    list[1] = NULL;  // NULL terminator
+    return list;
+}
+
+Operand ** Z80ExprListAppend(Operand ** list, Operand * expr) {
+    if (!list) {
+        return Z80ExprListInit(expr);
+    }
+    
+    // Count current elements
+    int count = 0;
+    while (list[count] != NULL) {
+        count++;
+    }
+    
+    // Reallocate to add new element + NULL terminator
+    list = (Operand **)realloc(list, (count + 2) * sizeof(Operand *));
+    list[count] = expr;
+    list[count + 1] = NULL;  // NULL terminator
+    
+    return list;
 }
 
 Constant * IntegerConstantSemanticAction(const int value) {

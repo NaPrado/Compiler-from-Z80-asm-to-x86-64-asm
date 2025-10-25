@@ -52,7 +52,7 @@ extern CompilationStatus EnterSegmentLexemeAction(int segmentType);
  * @see https://westes.github.io/flex/manual/Matching.html
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
-whitespace			[[:space:]]+
+whitespace			[ \t\r]+
 digit				[0-9]
 hex					[0-9A-Fa-f]
 letter				[A-Za-z_]
@@ -131,6 +131,7 @@ identifier			{letter}({letter}|{digit})*
 (?i:MACRO)                          { return Z80MacroLexemeAction(MACRO); }
 (?i:ENDM)                           { return Z80MacroLexemeAction(ENDM); }
 
+0[xX]{hex}+							{ return IntegerLexemeAction(); }
 [[:digit:]]+						{ return IntegerLexemeAction(); }
 
 ","                                 { return ComaLexemeAction(COMA); }

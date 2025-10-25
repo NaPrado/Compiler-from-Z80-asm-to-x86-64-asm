@@ -19,6 +19,7 @@ typedef enum RegisterName RegisterName;
 typedef enum ConditionType ConditionType;
 typedef enum LineType LineType;
 typedef enum OperandType OperandType;
+typedef enum DataType DataType;
 
 typedef struct Constant Constant;
 typedef struct Program Program;
@@ -69,9 +70,15 @@ enum OperandType{
 };
 
 enum LineType{
-   	LINE_INSTRUCTION,
+   	LINE_INSTRUCTION, 
     LINE_MACRO,
     LINE_EMPTY
+};
+
+enum DataType{
+    DATA_DB,  // Define Byte
+    DATA_DW,  // Define Word
+    DATA_DS   // Define Storage
 };
 
 // Estructuras del AST
@@ -112,11 +119,9 @@ struct CodeLine {
 };
 
 struct DataLine {
-    LineType type;
-    union {
-        Instruction* instruction;
-        MacroDef* macro;
-    };
+    DataType dataType;  // DB, DW, or DS
+    Operand** values;   // List of values (for DB/DW) or single size value (for DS)
+    int valueCount;     // Number of values
 };
 
 struct MacroDef {

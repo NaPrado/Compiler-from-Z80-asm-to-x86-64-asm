@@ -1,6 +1,10 @@
+Dseg
+DB 0x00
+
 Cseg
 ADD B
 SUB C
 LD A, B
 ; This is a comment
 NOP
+

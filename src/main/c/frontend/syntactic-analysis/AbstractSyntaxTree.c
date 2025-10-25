@@ -105,15 +105,12 @@ void destroyDataLine(DataLine *line) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!line) return;
 
-    switch (line->type) {
-        case LINE_INSTRUCTION:
-            destroyInstruction(line->instruction);
-            break;
-        case LINE_MACRO:
-            destroyMacroDef(line->macro);
-            break;
-        default:
-            break;
+    // Free the values array and each operand
+    if (line->values) {
+        for (int i = 0; i < line->valueCount; i++) {
+            destroyOperand(line->values[i]);
+        }
+        free(line->values);
     }
 
     free(line);

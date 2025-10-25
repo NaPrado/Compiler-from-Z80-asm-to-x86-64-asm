@@ -53,7 +53,34 @@ void yyerror(const YYLTYPE * location, const char * message) {}
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-/**%destructor { destroyConstant($$); } <constant> */
+%destructor { if ($$) free($$); } <string>
+%destructor { if ($$) destroyOperand($$); } <operand>
+%destructor { if ($$) destroyInstruction($$); } <instruction>
+%destructor { if ($$) destroyCodeLine($$); } <codeLine>
+%destructor { if ($$) destroyDataLine($$); } <dataLine>
+%destructor { if ($$) destroyCodeBlock($$); } <codeBlock>
+%destructor { if ($$) destroyDataBlock($$); } <dataBlock>
+%destructor { if ($$) destroyCodeSeg($$); } <codeSeg>
+%destructor { if ($$) destroyDataSeg($$); } <dataSeg>
+// NOTE: No destructor for <program> - we manually call destroyProgram() in EntryPoint.c
+
+%destructor { 
+    if ($$) {
+        for (int i = 0; $$[i] != NULL; i++) {
+            free($$[i]);
+        }
+        free($$);
+    }
+} <idList>
+
+%destructor {
+    if ($$) {
+        for (int i = 0; $$[i] != NULL; i++) {
+            destroyOperand($$[i]);
+        }
+        free($$);
+    }
+} <operandList>
 
 
 /** Terminals. */
@@ -211,6 +238,7 @@ dataLine
 	: TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($2); }
 	| TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($2); }
 	| TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($2); }
+	| NEW_LINE                             { $$ = NULL; }
 	;
 
 macroDef
@@ -323,8 +351,8 @@ expr
 
 /* lista de expresiones para declaraciones de datos */
 exprList
-	: expr                                              { $$ = NULL; /* TODO: implementar lista */ }
-	| exprList COMA expr                                { $$ = NULL; /* TODO: implementar lista */ }
+	: expr                                              { $$ = Z80ExprListInit($1); }
+	| exprList COMA expr                                { $$ = Z80ExprListAppend($1, $3); }
 	;
 
 %%

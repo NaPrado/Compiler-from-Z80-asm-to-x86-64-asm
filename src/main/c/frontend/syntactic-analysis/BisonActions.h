@@ -50,4 +50,8 @@ Operand * Z80OpImm(int value);
 Operand * Z80OpSymbol(char * symbol);
 Operand * Z80OpCond(ConditionType cond);
 
+/* Funciones para construir listas de expresiones */
+Operand ** Z80ExprListInit(Operand * expr);
+Operand ** Z80ExprListAppend(Operand ** list, Operand * expr);
+
 #endif
