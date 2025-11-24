@@ -1,178 +1,169 @@
-// #include "Generator.h"
+#include "Generator.h"
+#include "InstructionMapper.h"
+#include "RegisterMapper.h"
+#include <stdarg.h>
+#include <stdio.h>
 
-// /* MODULE INTERNAL STATE */
 
-// const char _indentationCharacter = ' ';
-// const char _indentationSize = 4;
-// static Logger * _logger = NULL;
+// todo: revisar todo
 
-// /** Shutdown module's internal state. */
-// void _shutdownGeneratorModule() {
-// 	if (_logger != NULL) {
-// 		logDebugging(_logger, "Destroying module: Generator...");
-// 		destroyLogger(_logger);
-// 		_logger = NULL;
-// 	}
-// }
+/* MODULE INTERNAL STATE */
 
-// ModuleDestructor initializeGeneratorModule() {
-// 	_logger = createLogger("Generator");
-// 	return _shutdownGeneratorModule;
-// }
+static Logger* _logger = NULL;
 
-// /** PRIVATE FUNCTIONS */
+/** Shutdown module's internal state. */
+void _shutdownGeneratorModule() {
+	if (_logger != NULL) {
+		logDebugging(_logger, "Destroying module: Generator...");
+		destroyLogger(_logger);
+		_logger = NULL;
+	}
+}
 
-// static char * _indentation(const unsigned int indentationLevel);
-// static const char _expressionTypeToCharacter(const ExpressionType type);
-// static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-// static void _generateEpilogue(const int value);
-// static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
-// static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-// static void _generateProgram(Program * program);
-// static void _generatePrologue(void);
-// static void _output(const unsigned int indentationLevel, const char * const format, ...);
+ModuleDestructor initializeGeneratorModule() {
+	_logger = createLogger("Generator");
+	return _shutdownGeneratorModule;
+}
 
-// /**
-//  * Converts and expression type to the proper character of the operation
-//  * involved, or returns '\0' if that's not possible.
-//  */
-// static const char _expressionTypeToCharacter(const ExpressionType type) {
-// 	switch (type) {
-// 		case ADDITION: return '+';
-// 		case DIVISION: return '/';
-// 		case MULTIPLICATION: return '*';
-// 		case SUBTRACTION: return '-';
-// 		default:
-// 			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
-// 			return '\0';
-// 	}
-// }
+/** PRIVATE FUNCTIONS */
 
-// /**
-//  * Generates the output of a constant.
-//  */
-// static void _generateConstant(const unsigned int indentationLevel, Constant * constant) {
-// 	_output(indentationLevel, "%s", "[ $C$, circle, draw, black!20\n");
-// 	_output(1 + indentationLevel, "%s%d%s", "[ $", constant->value, "$, circle, draw ]\n");
-// 	_output(indentationLevel, "%s", "]\n");
-// }
+static void emitCode(const char* format, ...);
+static void emitLabel(const char* label);
+static void emitComment(const char* comment);
+static void generatePrologue();
+static void generateEpilogue();
+static void generateProgram(Program* program, SymbolTable* table);
+static void generateDataSegment(DataSeg* dataSeg);
+static void generateCodeSegment(CodeSeg* codeSeg, SymbolTable* table);
+static void generateCodeLine(CodeLine* line, SymbolTable* table);
+static void generateDataLine(DataLine* line);
 
-// /**
-//  * Creates the epilogue of the generated output, that is, the final lines that
-//  * completes a valid Latex document.
-//  */
-// static void _generateEpilogue(const int value) {
-// 	_output(0, "%s%d%s",
-// 		"            [ $", value, "$, circle, draw, blue ]\n"
-// 		"        ]\n"
-// 		"    \\end{forest}\n"
-// 		"\\end{document}\n\n"
-// 	);
-// }
+static void emitCode(const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	printf("  ");
+	vprintf(format, args);
+	printf("\n");
+	fflush(stdout);
+	va_end(args);
+}
 
-// /**
-//  * Generates the output of an expression.
-//  */
-// static void _generateExpression(const unsigned int indentationLevel, Expression * expression) {
-// 	_output(indentationLevel, "%s", "[ $E$, circle, draw, black!20\n");
-// 	switch (expression->type) {
-// 		case ADDITION:
-// 		case DIVISION:
-// 		case MULTIPLICATION:
-// 		case SUBTRACTION:
-// 			_generateExpression(1 + indentationLevel, expression->leftExpression);
-// 			_output(1 + indentationLevel, "%s%c%s", "[ $", _expressionTypeToCharacter(expression->type), "$, circle, draw, purple ]\n");
-// 			_generateExpression(1 + indentationLevel, expression->rightExpression);
-// 			break;
-// 		case FACTOR:
-// 			_generateFactor(1 + indentationLevel, expression->factor);
-// 			break;
-// 		default:
-// 			logError(_logger, "The specified expression type is unknown: %d", expression->type);
-// 			break;
-// 	}
-// 	_output(indentationLevel, "%s", "]\n");
-// }
+static void emitLabel(const char* label) {
+	printf("%s:\n", label);
+	fflush(stdout);
+}
 
-// /**
-//  * Generates the output of a factor.
-//  */
-// static void _generateFactor(const unsigned int indentationLevel, Factor * factor) {
-// 	_output(indentationLevel, "%s", "[ $F$, circle, draw, black!20\n");
-// 	switch (factor->type) {
-// 		case CONSTANT:
-// 			_generateConstant(1 + indentationLevel, factor->constant);
-// 			break;
-// 		case EXPRESSION:
-// 			_output(1 + indentationLevel, "%s", "[ $($, circle, draw, purple ]\n");
-// 			_generateExpression(1 + indentationLevel, factor->expression);
-// 			_output(1 + indentationLevel, "%s", "[ $)$, circle, draw, purple ]\n");
-// 			break;
-// 		default:
-// 			logError(_logger, "The specified factor type is unknown: %d", factor->type);
-// 			break;
-// 	}
-// 	_output(indentationLevel, "%s", "]\n");
-// }
+static void emitComment(const char* comment) {
+	printf("  ; %s\n", comment);
+	fflush(stdout);
+}
 
-// /**
-//  * Generates the output of the program.
-//  */
-// static void _generateProgram(Program * program) {
-// 	_generateExpression(3, program->expression);
-// }
+static void generatePrologue() {
+	printf("; Generated from Z80 assembly\n");
+}
 
-// /**
-//  * Creates the prologue of the generated output, a Latex document that renders
-//  * a tree thanks to the Forest package.
-//  *
-//  * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
-//  */
-// static void _generatePrologue(void) {
-// 	_output(0, "%s",
-// 		"\\documentclass{standalone}\n\n"
-// 		"\\usepackage[utf8]{inputenc}\n"
-// 		"\\usepackage[T1]{fontenc}\n"
-// 		"\\usepackage{amsmath}\n"
-// 		"\\usepackage{forest}\n"
-// 		"\\usepackage{microtype}\n\n"
-// 		"\\begin{document}\n"
-// 		"    \\centering\n"
-// 		"    \\begin{forest}\n"
-// 		"        [ \\text{$=$}, circle, draw, purple\n"
-// 	);
-// }
+static void generateEpilogue() {
+	emitComment("Exit program");
+	emitCode("mov rax, 60");
+	emitCode("xor rdi, rdi");
+	emitCode("syscall");
+}
 
-// /**
-//  * Generates an indentation string for the specified level.
-//  */
-// static char * _indentation(const unsigned int level) {
-// 	return indentation(_indentationCharacter, level, _indentationSize);
-// }
+static void generateProgram(Program* program, SymbolTable* table) {
+	generatePrologue();
+	
+	if (program->dataSeg != NULL) {
+		generateDataSegment(program->dataSeg);
+	}
+	
+	if (program->codeSeg != NULL) {
+		generateCodeSegment(program->codeSeg, table);
+	}
+}
 
-// /**
-//  * Outputs a formatted string to standard output. The "fflush" instruction
-//  * allows to see the output even close to a failure, because it drops the
-//  * buffering.
-//  */
-// static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-// 	va_list arguments;
-// 	va_start(arguments, format);
-// 	char * indentation = _indentation(indentationLevel);
-// 	char * effectiveFormat = concatenate(2, indentation, format);
-// 	vfprintf(stdout, effectiveFormat, arguments);
-// 	fflush(stdout);
-// 	free(effectiveFormat);
-// 	free(indentation);
-// 	va_end(arguments);
-// }
+static void generateDataSegment(DataSeg* dataSeg) {
+	if (dataSeg == NULL || dataSeg->dataBlock == NULL) {
+		return;
+	}
+	
+	printf(".section .data\n");
+	DataBlock* block = dataSeg->dataBlock;
+	for (int i = 0; i < block->count; i++) {
+		generateDataLine(block->lines[i]);
+	}
+	printf("\n");
+}
 
-// /** PUBLIC FUNCTIONS */
+static void generateCodeSegment(CodeSeg* codeSeg, SymbolTable* table) {
+	if (codeSeg == NULL || codeSeg->codeBlock == NULL) {
+		return;
+	}
+	
+	printf(".section .text\n");
+	printf(".globl _start\n");
+	emitLabel("_start");
+	
+	CodeBlock* block = codeSeg->codeBlock;
+	for (int i = 0; i < block->count; i++) {
+		generateCodeLine(block->lines[i], table);
+	}
+	
+	printf("\n");
+	generateEpilogue();
+}
 
-// void executeGenerator(CompilerState * compilerState) {
-// 	logDebugging(_logger, "Generating final output...");
-// 	_generatePrologue();
-// 	_generateProgram(compilerState->abstractSyntaxtTree);
-// 	_generateEpilogue(compilerState->value);
-// 	logDebugging(_logger, "Generation is done.");
-// }
+static void generateCodeLine(CodeLine* line, SymbolTable* table) {
+	if (line == NULL) {
+		return;
+	}
+	
+	switch (line->type) {
+		case LINE_LABEL:
+			emitLabel(line->label);
+			break;
+		case LINE_INSTRUCTION:
+			generateInstruction(line->instruction, table);
+			break;
+		case LINE_MACRO:
+			logError(_logger, "Macros should be expanded before code generation");
+			break;
+		case LINE_EMPTY:
+			break;
+	}
+}
+
+static void generateDataLine(DataLine* line) {
+	if (line == NULL) {
+		return;
+	}
+	
+	switch (line->dataType) {
+		case DATA_DB:
+			printf("  .byte ");
+			break;
+		case DATA_DW:
+			printf("  .word ");
+			break;
+		case DATA_DS:
+			printf("  .space ");
+			break;
+	}
+	
+	for (int i = 0; i < line->valueCount; i++) {
+		if (i > 0) {
+			printf(", ");
+		}
+		if (line->values[i]->type == OPERAND_CONSTANT) {
+			printf("0x%X", line->values[i]->constantValue);
+		}
+	}
+	printf("\n");
+}
+
+/** PUBLIC FUNCTIONS */
+
+void executeGenerator(CompilerState* compilerState, SymbolTable* symbolTable) {
+	logDebugging(_logger, "Generating x86-64 assembly...");
+	generateProgram(compilerState->abstractSyntaxtTree, symbolTable);
+	logDebugging(_logger, "Code generation complete.");
+}
