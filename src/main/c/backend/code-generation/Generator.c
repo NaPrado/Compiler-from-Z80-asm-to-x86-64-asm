@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 
-// todo: revisar todo
+// todo: revisar todo 
 
 /* MODULE INTERNAL STATE */
 
@@ -33,11 +33,11 @@ static void emitComment(const char* comment);
 static void generatePrologue();
 static void generateEpilogue();
 static void generateProgram(Program* program, SymbolTable* table);
-static void generateDataSegment(DataSeg* dataSeg);
+static void generateDataSegment(DataSeg* dataSeg, SymbolTable* table);
 static void generateCodeSegment(CodeSeg* codeSeg, SymbolTable* table);
 static void generateCodeLine(CodeLine* line, SymbolTable* table);
-static void generateDataLine(DataLine* line);
-
+static void generateDataLine(DataLine* line, SymbolTable* table);
+static void generateMacro(MacroDef* macro, SymbolTable* table);
 static void emitCode(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
@@ -59,21 +59,21 @@ static void emitComment(const char* comment) {
 }
 
 static void generatePrologue() {
-	printf("; Generated from Z80 assembly\n");
+	emitComment("Generated from Z80 assembly");
+	printf("GLOBAL _start\n");
 }
 
 static void generateEpilogue() {
 	emitComment("Exit program");
-	emitCode("mov rax, 60");
+	emitCode("mov rax, 1");
 	emitCode("xor rdi, rdi");
 	emitCode("syscall");
 }
 
 static void generateProgram(Program* program, SymbolTable* table) {
-	generatePrologue();
 	
 	if (program->dataSeg != NULL) {
-		generateDataSegment(program->dataSeg);
+		generateDataSegment(program->dataSeg, table);
 	}
 	
 	if (program->codeSeg != NULL) {
@@ -81,15 +81,15 @@ static void generateProgram(Program* program, SymbolTable* table) {
 	}
 }
 
-static void generateDataSegment(DataSeg* dataSeg) {
+static void generateDataSegment(DataSeg* dataSeg, SymbolTable* table) {
 	if (dataSeg == NULL || dataSeg->dataBlock == NULL) {
 		return;
 	}
 	
-	printf(".section .data\n");
+	printf("section .data\n");
 	DataBlock* block = dataSeg->dataBlock;
 	for (int i = 0; i < block->count; i++) {
-		generateDataLine(block->lines[i]);
+		generateDataLine(block->lines[i], table);
 	}
 	printf("\n");
 }
@@ -99,8 +99,7 @@ static void generateCodeSegment(CodeSeg* codeSeg, SymbolTable* table) {
 		return;
 	}
 	
-	printf(".section .text\n");
-	printf(".globl _start\n");
+	printf("section .text\n");
 	emitLabel("_start");
 	
 	CodeBlock* block = codeSeg->codeBlock;
@@ -125,45 +124,84 @@ static void generateCodeLine(CodeLine* line, SymbolTable* table) {
 			generateInstruction(line->instruction, table);
 			break;
 		case LINE_MACRO:
-			logError(_logger, "Macros should be expanded before code generation");
+			generateMacro(line->macro, table);
 			break;
 		case LINE_EMPTY:
 			break;
 	}
 }
 
-static void generateDataLine(DataLine* line) {
+static void generateDataLine(DataLine* line, SymbolTable* table) {
 	if (line == NULL) {
 		return;
 	}
 	
 	switch (line->dataType) {
 		case DATA_DB:
-			printf("  .byte ");
+			printf("  db ");
+			for (int i = 0; i < line->valueCount; i++) {
+				if (i > 0) printf(", ");
+				generateOperand(line->values[i], table);
+			}
 			break;
+		
 		case DATA_DW:
-			printf("  .word ");
+			printf("  dw ");
+			for (int i = 0; i < line->valueCount; i++) {
+				if (i > 0) printf(", ");
+				generateOperand(line->values[i], table);
+			}
 			break;
+		
+		// todo: revisar si se puede poner resb en .data
 		case DATA_DS:
-			printf("  .space ");
+			printf("  resb ");
+			if (line->valueCount > 0 && line->values[0]->type == OPERAND_CONSTANT) {
+				printf("%d", line->values[0]->constantValue);
+			} else {
+				printf("1");
+			}
 			break;
-	}
-	
-	for (int i = 0; i < line->valueCount; i++) {
-		if (i > 0) {
-			printf(", ");
-		}
-		if (line->values[i]->type == OPERAND_CONSTANT) {
-			printf("0x%X", line->values[i]->constantValue);
-		}
 	}
 	printf("\n");
+}
+
+static void generateMacro(MacroDef* macro, SymbolTable* table) {
+	if (macro == NULL) {
+		return;
+	}
+	
+	printf("%%macro %s %d\n", macro->name, macro->paramCount);
+	
+	if (macro->body != NULL && macro->body->lines != NULL) {
+		for (int i = 0; i < macro->body->count; i++) {
+			CodeLine* line = macro->body->lines[i];
+			if (line == NULL) continue;
+			
+			switch (line->type) {
+				case LINE_LABEL:
+					emitLabel(line->label);
+					break;
+				case LINE_INSTRUCTION:
+					generateInstructionWithParams(line->instruction, table, macro->params, macro->paramCount);
+					break;
+				case LINE_MACRO:
+					logError(_logger, "Nested macros not supported");
+					break;
+				case LINE_EMPTY:
+					break;
+			}
+		}
+	}
+	
+	printf("%%endmacro\n\n");
 }
 
 /** PUBLIC FUNCTIONS */
 
 void executeGenerator(CompilerState* compilerState, SymbolTable* symbolTable) {
 	logDebugging(_logger, "Generating x86-64 assembly...");
+	generatePrologue();
 	generateProgram(compilerState->abstractSyntaxtTree, symbolTable);
 	logDebugging(_logger, "Code generation complete.");
 }
