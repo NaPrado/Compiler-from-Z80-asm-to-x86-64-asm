@@ -29,18 +29,18 @@ const int main(const int length, const char ** arguments) {
 		initializeBisonActionsModule(&compilerState),
 		initializeFrontendModule(lexicalAnalyzer),
 		// initializeCalculatorModule(),
-		// initializeGeneratorModule()
+		initializeGeneratorModule()
 	};
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (compilationStatus == SUCCEEDED) {
-		logDebugging(logger, "Computing expression value...");
+		logDebugging(logger, "Arrancando generator...");
 
 		// todo: validatorResult = validateProgram(program);
 
-		if (/* validated */) {
-		    compilerState.value = computationResult.value;
-		    executeGenerator(&compilerState);
+		if (1) {
+		    compilerState.value = 1;
+		    executeGenerator(&compilerState, NULL);
 		}
 		else {
 		    logError(logger, "The computation phase rejects the input program.");

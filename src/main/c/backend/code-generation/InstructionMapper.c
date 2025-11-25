@@ -153,23 +153,23 @@ const char* conditionToX86(ConditionType cond) {
 
 const char* instructionToString(InstructionType type) {
     switch (type) {
-        case INSN_LD:   return "LD";
-        case INSN_ADD:  return "ADD";
-        case INSN_SUB:  return "SUB";
-        case INSN_INC:  return "INC";
-        case INSN_DEC:  return "DEC";
-        case INSN_AND:  return "AND";
-        case INSN_OR:   return "OR";
-        case INSN_XOR:  return "XOR";
-        case INSN_CP:   return "CP";
-        case INSN_JP:   return "JP";
-        case INSN_JR:   return "JR";
-        case INSN_DJNZ: return "DJNZ"; // todo: abria que hacer el djnz bien
-        case INSN_CALL: return "CALL";
-        case INSN_RET:  return "RET";
-        case INSN_PUSH: return "PUSH";
-        case INSN_POP:  return "POP";
-        case INSN_NOP:  return "NOP";
+        case INST_LD:   return "LD";
+        case INST_ADD:  return "ADD";
+        case INST_SUB:  return "SUB";
+        case INST_INC:  return "INC";
+        case INST_DEC:  return "DEC";
+        case INST_AND:  return "AND";
+        case INST_OR:   return "OR";
+        case INST_XOR:  return "XOR";
+        case INST_CP:   return "CP";
+        case INST_JP:   return "JP";
+        case INST_JR:   return "JR";
+        case INST_DJNZ: return "DJNZ"; // todo: abria que hacer el djnz bien
+        case INST_CALL: return "CALL";
+        case INST_RET:  return "RET";
+        case INST_PUSH: return "PUSH";
+        case INST_POP:  return "POP";
+        case INST_NOP:  return "NOP";
         default:        return "UNKNOWN";
     }
 }

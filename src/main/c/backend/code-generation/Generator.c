@@ -90,7 +90,7 @@ static void generateDataSegment(DataSeg* dataSeg, SymbolTable* table) {
 	DataBlock* block = dataSeg->dataBlock;
 	for (int i = 0; i < block->count; i++) {
 		generateDataLine(block->lines[i], table);
-	}
+	} 
 	printf("\n");
 }
 
@@ -131,6 +131,7 @@ static void generateCodeLine(CodeLine* line, SymbolTable* table) {
 	}
 }
 
+// todo: se puede separar en dos para data y bss
 static void generateDataLine(DataLine* line, SymbolTable* table) {
 	if (line == NULL) {
 		return;
