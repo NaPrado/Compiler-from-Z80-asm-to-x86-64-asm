@@ -30,6 +30,9 @@ void destroyConstant(Constant * constant) {
 void destroyExpression(Expr *expression) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!expression) return;
+    if (expression->symbol) {
+        free(expression->symbol);
+    }
     free(expression);
 }
 

@@ -282,7 +282,7 @@ Operand * Z80OpMemIdxDisp(RegisterName reg, Operand * disp) {
     
     Expr *expr = (Expr *)calloc(1, sizeof(Expr));
     if (disp->type == OPERAND_CONSTANT) {
-        expr->value = disp->constantValue;
+        expr->value = disp->expr->value;
         expr->symbol = NULL;
     } else if (disp->type == OPERAND_SYMBOL) {
         expr->value = 0;
@@ -325,6 +325,7 @@ Operand* Z80OpImm(int value) {
     op->type = OPERAND_CONSTANT;
     Expr* expr = malloc(sizeof(Expr)); 
     expr->value = value;
+    expr->symbol = NULL;
     op->expr = expr;
     
     return op;

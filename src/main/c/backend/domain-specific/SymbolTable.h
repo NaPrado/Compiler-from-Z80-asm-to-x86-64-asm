@@ -1,7 +1,6 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-// #include "../code-generation/Generator.h"
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include <stdbool.h>
 

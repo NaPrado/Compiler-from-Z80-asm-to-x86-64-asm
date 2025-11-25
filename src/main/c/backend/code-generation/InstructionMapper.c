@@ -30,6 +30,206 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
     }
     
     logDebugging(_logger, "Generating instruction: %s", instructionToString(insn->type));
+
+    switch (insn->type) {
+        case INST_LD:
+            // LD dst, src -> mov dst, src
+            if (insn->operandCount >= 2) {
+                printf("  mov ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_ADD:
+            // ADD operand -> add al, operand (A = A + operand en Z80)
+            if (insn->operandCount == 1) {
+                printf("  add al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                // ADD dst, src
+                printf("  add ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_SUB:
+            // SUB operand -> sub al, operand
+            if (insn->operandCount == 1) {
+                printf("  sub al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                printf("  sub ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_INC:
+            // INC operand -> inc operand
+            if (insn->operandCount >= 1) {
+                printf("  inc ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_DEC:
+            // DEC operand -> dec operand
+            if (insn->operandCount >= 1) {
+                printf("  dec ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_AND:
+            // AND operand -> and al, operand
+            if (insn->operandCount == 1) {
+                printf("  and al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                printf("  and ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_OR:
+            // OR operand -> or al, operand
+            if (insn->operandCount == 1) {
+                printf("  or al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                printf("  or ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_XOR:
+            // XOR operand -> xor al, operand
+            if (insn->operandCount == 1) {
+                printf("  xor al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                printf("  xor ");
+                generateOperand(insn->operands[0], table);
+                printf(", ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_CP:
+            // CP operand -> cmp al, operand
+            if (insn->operandCount >= 1) {
+                printf("  cmp al, ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_JP:
+            // JP [cond,] addr -> jmp/j<cond> addr
+            if (insn->operandCount == 1) {
+                printf("  jmp ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                // JP cond, addr
+                printf("  j");
+                generateOperand(insn->operands[0], table);
+                printf(" ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_JR:
+            // JR [cond,] disp -> jmp/j<cond> (relative jump)
+            if (insn->operandCount == 1) {
+                printf("  jmp ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            } else if (insn->operandCount == 2) {
+                printf("  j");
+                generateOperand(insn->operands[0], table);
+                printf(" ");
+                generateOperand(insn->operands[1], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_DJNZ:
+            // DJNZ disp -> dec + jnz
+            // En Z80: decrementa B y salta si B != 0
+            printf("  dec bl ");
+            if (insn->operandCount >= 1) {
+                printf("  jnz ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_CALL:
+            // CALL addr -> call addr
+            if (insn->operandCount >= 1) {
+                printf("  call ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_RET:
+            // RET -> ret
+            printf("  ret\n");
+            break;
+            
+        case INST_PUSH:
+            // PUSH reg -> push reg
+            if (insn->operandCount >= 1) {
+                printf("  push ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_POP:
+            // POP reg -> pop reg
+            if (insn->operandCount >= 1) {
+                printf("  pop ");
+                generateOperand(insn->operands[0], table);
+                printf("\n");
+            }
+            break;
+            
+        case INST_NOP:
+            // NOP -> nop
+            printf("  nop\n");
+            break;
+            
+        default:
+            logError(_logger, "Unsupported instruction: %s", instructionToString(insn->type));
+            printf("  ; TODO: Implement %s\n", instructionToString(insn->type));
+            break;
+    }
 }
 
 void generateOperand(Operand* operand, SymbolTable* table) {
@@ -48,7 +248,7 @@ void generateOperandWithParams(Operand* operand, SymbolTable* table, char** para
 
     switch (operand->type) {
         case OPERAND_CONSTANT:
-            printf("0x%X", operand->constantValue);
+            printf("0x%X", operand->expr->value);
             break;
             
         case OPERAND_SYMBOL: {
@@ -92,7 +292,7 @@ void generateOperandWithParams(Operand* operand, SymbolTable* table, char** para
                 }
             } else {
                 printf("[%s]", baseReg);
-            }
+            } 
             break;
         }
             

@@ -5,20 +5,21 @@
 static Logger* _logger = NULL;
 
 static RegisterMapping registerMap[] = {
-    {"A",  "al",  "ax",  "rax"},
-    {"B",  "bl",  "bx",  "rbx"},
-    {"C",  "cl",  "cx",  "rcx"},
-    {"D",  "dl",  "dx",  "rdx"},
-    {"E",  "r8b", "r8w", "r8"},
-    {"H",  "r9b", "r9w", "r9"},
-    {"L",  "r10b", "r10w", "r10"},
-    {"AF", NULL,  "ax",  "rax"},
-    {"BC", NULL,  "bx",  "rbx"},
-    {"DE", NULL,  "dx",  "rdx"},
-    {"HL", NULL,  "r11w", "r11"},
-    {"SP", NULL,  "sp",  "rsp"},
-    {"IX", NULL,  "si",  "rsi"},
-    {"IY", NULL,  "di",  "rdi"}
+    {"A",  "al",    "ax",    "rax"},
+    {"F",  "ah",    "ax",    "rax"},
+    {"B",  "bh",    "bx",    "rbx"},
+    {"C",  "bl",    "bx",    "rbx"},
+    {"D",  "dh",    "dx",    "rdx"},
+    {"E",  "dl",    "dx",    "rdx"},
+    {"H",  "sih",   "si",    "rsi"},
+    {"L",  "sil",   "si",    "rsi"},
+    {"AF", NULL,    "ax",    "rax"},
+    {"BC", NULL,    "bx",    "rbx"},
+    {"DE", NULL,    "dx",    "rdx"},
+    {"HL", NULL,    "si",    "rsi"},
+    {"SP", NULL,    "sp",    "rsp"},
+    {"IX", NULL,    "r8w",   "r8"},
+    {"IY", NULL,    "r9w",   "r9"}
 };
 
 const char* getX86Register8(RegisterName z80reg) {

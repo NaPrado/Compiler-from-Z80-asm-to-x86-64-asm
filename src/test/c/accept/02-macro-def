@@ -1,4 +1,4 @@
 Cseg
 MYMACRO MACRO param1, param2
-NOP
+LD A, param2
 ENDM

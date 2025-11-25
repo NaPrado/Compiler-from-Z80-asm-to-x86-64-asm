@@ -61,7 +61,7 @@ static void emitComment(const char* comment) {
 
 static void generatePrologue() {
 	emitComment("Generated from Z80 assembly");
-	printf("GLOBAL _start\n");
+	printf("GLOBAL _start\n\n");
 }
 
 static void generateEpilogue() {
