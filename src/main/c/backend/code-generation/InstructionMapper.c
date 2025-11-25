@@ -274,7 +274,7 @@ void generateOperandWithParams(Operand* operand, SymbolTable* table, char** para
             break;
             
         case OPERAND_MEMORY_HL:
-            printf("[rbx]");
+            printf("[rcx]");
             break;
             
         case OPERAND_MEMORY_IXIY_DISP: {
