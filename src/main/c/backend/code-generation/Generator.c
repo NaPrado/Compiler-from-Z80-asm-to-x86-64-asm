@@ -1,6 +1,7 @@
 #include "Generator.h"
 #include "InstructionMapper.h"
 #include "RegisterMapper.h"
+#include "../domain-specific/SymbolTable.h" 
 #include <stdarg.h>
 #include <stdio.h>
 
