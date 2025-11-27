@@ -83,7 +83,7 @@ identifier			{letter}({letter}|{digit})*
 (?i:H)                                 { return Z80RegisterLexemeAction(TOK_REG_H); }
 (?i:L)                                 { return Z80RegisterLexemeAction(TOK_REG_L); }
 (?i:BC)                                { return Z80RegisterLexemeAction(TOK_REG_BC); }
-(?i:DC)                                { return Z80RegisterLexemeAction(TOK_REG_DC); }
+(?i:DE)                                { return Z80RegisterLexemeAction(TOK_REG_DE); }
 (?i:HL)                                { return Z80RegisterLexemeAction(TOK_REG_HL); }
 (?i:AF)                                { return Z80RegisterLexemeAction(TOK_REG_AF); }
 (?i:SP)                                { return Z80RegisterLexemeAction(TOK_REG_SP); }
