@@ -1,5 +1,4 @@
 #include "backend/code-generation/Generator.h"
-// #include "backend/domain-specific/Validator.h"
 #include "frontend/Frontend.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -28,28 +27,18 @@ const int main(const int length, const char ** arguments) {
 		initializeFlexActionsModule(lexicalAnalyzer),
 		initializeBisonActionsModule(&compilerState),
 		initializeFrontendModule(lexicalAnalyzer),
-		// initializeCalculatorModule(),
 		initializeGeneratorModule()
 	};
 	CompilationStatus compilationStatus = executeSyntacticAnalysis();
 	Program * program = compilerState.abstractSyntaxtTree;
+	
 	if (compilationStatus == SUCCEEDED) {
-		logDebugging(logger, "Arrancando generator...");
-
-		// todo: validatorResult = validateProgram(program);
-
-		if (1) {
-		    compilerState.value = 1;
-		    executeGenerator(&compilerState, NULL);
-		}
-		else {
-		    logError(logger, "The computation phase rejects the input program.");
-		    compilationStatus = FAILED;
-		}
+		logDebugging(logger, "Syntax analysis succeeded. Starting code generation...");
+		executeGenerator(&compilerState);
+		logDebugging(logger, "Code generation completed successfully.");
 	}
 	else {
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
-		compilationStatus = FAILED;
 	}
 	logDebugging(logger, "Releasing AST resources...");
 	destroyProgram(program);

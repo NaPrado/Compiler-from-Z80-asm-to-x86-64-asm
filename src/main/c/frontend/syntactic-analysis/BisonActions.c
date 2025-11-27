@@ -144,7 +144,6 @@ CodeLine * Z80MakeCodeLineInsn(Instruction * insn) {
 
 CodeLine * Z80MakeCodeLineLabel(char * label) {
     CodeLine *line = (CodeLine *)calloc(1, sizeof(CodeLine));
-    line->label = strdup(label);
     line->type = LINE_LABEL;
     line->label = strdup(label);
     

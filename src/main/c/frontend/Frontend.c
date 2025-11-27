@@ -85,14 +85,6 @@ FlexContext currentLexicalAnalyzerContext(LexicalAnalyzer * lexicalAnalyzer) {
 void destroyInputBuffer(InputBuffer * inputBuffer) {
 	if (inputBuffer != NULL) {
 		if (inputBuffer->buffer != NULL) {
-			/**
-			 * @todo
-			 *	Because "yypop_buffer_state" in "popInputBuffer" deletes the
-			 *	buffer, this line produces a double-free error. However,
-			 *	commenting the line produces a memory-leak when a syntax error
-			 *	takes place inside a secondary input buffer.
-			 */
-			// yy_delete_buffer((YY_BUFFER_STATE) inputBuffer->buffer, (yyscan_t) inputBuffer->lexicalAnalyzer->scanner);
 			inputBuffer->buffer = NULL;
 		}
 		if (inputBuffer->file != NULL) {

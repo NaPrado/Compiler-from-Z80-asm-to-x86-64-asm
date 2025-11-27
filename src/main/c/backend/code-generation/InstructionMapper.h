@@ -2,12 +2,11 @@
 #define INSTRUCTION_MAPPER_H
 
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
-#include "../domain-specific/SymbolTable.h"
 
-void generateInstruction(Instruction* insn, SymbolTable* table);
-void generateInstructionWithParams(Instruction* insn, SymbolTable* table, char** params, int paramCount);
-void generateOperand(Operand* operand, SymbolTable* table);
-void generateOperandWithParams(Operand* operand, SymbolTable* table, char** params, int paramCount);
+void generateInstruction(Instruction* insn);
+void generateInstructionWithParams(Instruction* insn, char** params, int paramCount);
+void generateOperand(Operand* operand);
+void generateOperandWithParams(Operand* operand, char** params, int paramCount);
 const char* conditionToX86(ConditionType cond);
 const char* instructionToString(InstructionType type);
 

@@ -6,13 +6,10 @@
 #include "../../support/logging/Logger.h"
 #include "../../support/type/CompilerState.h"
 #include "../../support/type/ModuleDestructor.h"
-// #include "../domain-specific/SymbolTable.h"
 #include <stdarg.h>
 #include <stdio.h>
 
-typedef struct SymbolTable SymbolTable;
-
 ModuleDestructor initializeGeneratorModule();
-void executeGenerator(CompilerState* compilerState, SymbolTable* symbolTable);
+void executeGenerator(CompilerState* compilerState);
 
 #endif

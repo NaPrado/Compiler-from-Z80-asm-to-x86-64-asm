@@ -19,7 +19,7 @@ static int findParamIndex(const char* symbol, char** params, int paramCount) {
     return -1;
 }
 
-void generateInstruction(Instruction* insn, SymbolTable* table) {
+void generateInstruction(Instruction* insn) {
     if (_logger == NULL) {
         _logger = createLogger("InstructionMapper");
     }
@@ -45,9 +45,9 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
                 }
                 
                 printf("  mov ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -56,14 +56,14 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // ADD operand -> add al, operand (A = A + operand en Z80)
             if (insn->operandCount == 1) {
                 printf("  add al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 // ADD dst, src
                 printf("  add ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -72,13 +72,13 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // SUB operand -> sub al, operand
             if (insn->operandCount == 1) {
                 printf("  sub al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 printf("  sub ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -87,7 +87,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // INC operand -> inc operand
             if (insn->operandCount >= 1) {
                 printf("  inc ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -96,7 +96,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // DEC operand -> dec operand
             if (insn->operandCount >= 1) {
                 printf("  dec ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -105,13 +105,13 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // AND operand -> and al, operand
             if (insn->operandCount == 1) {
                 printf("  and al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 printf("  and ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -120,13 +120,13 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // OR operand -> or al, operand
             if (insn->operandCount == 1) {
                 printf("  or al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 printf("  or ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -135,13 +135,13 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // XOR operand -> xor al, operand
             if (insn->operandCount == 1) {
                 printf("  xor al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 printf("  xor ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(", ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -150,7 +150,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // CP operand -> cmp al, operand
             if (insn->operandCount >= 1) {
                 printf("  cmp al, ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -159,14 +159,14 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // JP [cond,] addr -> jmp/j<cond> addr
             if (insn->operandCount == 1) {
                 printf("  jmp ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 // JP cond, addr
                 printf("  j");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(" ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -175,13 +175,13 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // JR [cond,] disp -> jmp/j<cond> (relative jump)
             if (insn->operandCount == 1) {
                 printf("  jmp ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             } else if (insn->operandCount == 2) {
                 printf("  j");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf(" ");
-                generateOperand(insn->operands[1], table);
+                generateOperand(insn->operands[1]);
                 printf("\n");
             }
             break;
@@ -192,7 +192,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             printf("  dec bl ");
             if (insn->operandCount >= 1) {
                 printf("  jnz ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -201,7 +201,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // CALL addr -> call addr
             if (insn->operandCount >= 1) {
                 printf("  call ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -215,7 +215,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // PUSH reg -> push reg
             if (insn->operandCount >= 1) {
                 printf("  push ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -224,7 +224,7 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
             // POP reg -> pop reg
             if (insn->operandCount >= 1) {
                 printf("  pop ");
-                generateOperand(insn->operands[0], table);
+                generateOperand(insn->operands[0]);
                 printf("\n");
             }
             break;
@@ -241,11 +241,11 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
     }
 }
 
-void generateOperand(Operand* operand, SymbolTable* table) {
-    generateOperandWithParams(operand, table, NULL, 0);
+void generateOperand(Operand* operand) {
+    generateOperandWithParams(operand, NULL, 0);
 }
 
-void generateOperandWithParams(Operand* operand, SymbolTable* table, char** params, int paramCount) {
+void generateOperandWithParams(Operand* operand, char** params, int paramCount) {
     if (_logger == NULL) {
         _logger = createLogger("InstructionMapper");
     }
@@ -326,7 +326,7 @@ void generateOperandWithParams(Operand* operand, SymbolTable* table, char** para
     }
 }
 
-void generateInstructionWithParams(Instruction* insn, SymbolTable* table, char** params, int paramCount) {
+void generateInstructionWithParams(Instruction* insn, char** params, int paramCount) {
     if (_logger == NULL) {
         _logger = createLogger("InstructionMapper");
     }
@@ -340,7 +340,7 @@ void generateInstructionWithParams(Instruction* insn, SymbolTable* table, char**
     
     for (int i = 0; i < insn->operandCount; i++) {
         if (i > 0) printf(", ");
-        generateOperandWithParams(insn->operands[i], table, params, paramCount);
+        generateOperandWithParams(insn->operands[i], params, paramCount);
     }
     
     printf("\n");
@@ -373,7 +373,7 @@ const char* instructionToString(InstructionType type) {
         case INST_CP:   return "cp";
         case INST_JP:   return "jp";
         case INST_JR:   return "jr";
-        case INST_DJNZ: return "djnz"; // todo: abria que hacer el djnz bien
+        case INST_DJNZ: return "djnz";
         case INST_CALL: return "call";
         case INST_RET:  return "ret";
         case INST_PUSH: return "push";
