@@ -144,6 +144,7 @@ CodeLine * Z80MakeCodeLineInsn(Instruction * insn) {
 
 CodeLine * Z80MakeCodeLineLabel(char * label) {
     CodeLine *line = (CodeLine *)calloc(1, sizeof(CodeLine));
+    line->label = strdup(label);
     line->type = LINE_LABEL;
     line->label = strdup(label);
     
@@ -152,8 +153,9 @@ CodeLine * Z80MakeCodeLineLabel(char * label) {
     return line;
 }
 
-DataLine * Z80MakeDataLineDb(Operand ** exprList) {
+DataLine * Z80MakeDataLineDb(char * label, Operand ** exprList) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->label = strdup(label);
     line->dataType = DATA_DB;
     line->values = exprList;
     line->valueCount = 0;
@@ -164,11 +166,13 @@ DataLine * Z80MakeDataLineDb(Operand ** exprList) {
         }
     }
     
+    free(label);
     return line;
 }
 
-DataLine * Z80MakeDataLineDw(Operand ** exprList) {
+DataLine * Z80MakeDataLineDw(char * label, Operand ** exprList) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->label = strdup(label);
     line->dataType = DATA_DW;
     line->values = exprList;
     line->valueCount = 0;
@@ -180,11 +184,13 @@ DataLine * Z80MakeDataLineDw(Operand ** exprList) {
         }
     }
     
+    free(label);
     return line;
 }
 
-DataLine * Z80MakeDataLineDs(Operand * expr) {
+DataLine * Z80MakeDataLineDs(char * label, Operand * expr) {
     DataLine *line = (DataLine *)calloc(1, sizeof(DataLine));
+    line->label = strdup(label);
     line->dataType = DATA_DS;
     
     // DS takes a single expression for size
@@ -197,7 +203,7 @@ DataLine * Z80MakeDataLineDs(Operand * expr) {
         line->valueCount = 0;
     }
     
-    return line;
+    free(label);
     return line;
 }
 

@@ -145,7 +145,7 @@ identifier			{letter}({letter}|{digit})*
 (?i:ds)                             { return DataDeclarationLexemeAction(TOK_DATA_DS); }
 
 {identifier}":"                     { return LabelLexemeAction(); }
-{identifier}                        { return IdentifierLexemeAction(); }
+{identifier}                        { return LabelOrIdentifierAction(); }
 
 \n                                  { return NewLineLexemeAction(); }
 

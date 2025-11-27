@@ -117,6 +117,17 @@ CompilationStatus LabelLexemeAction() {
 	return status;
 }
 
+CompilationStatus LabelOrIdentifierAction() {
+	Token * token = createToken(_lexicalAnalyzer, LABEL);
+	token->semanticValue->string = strdup(token->lexeme);
+	_logTokenAction(__FUNCTION__, token);
+	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
+	free(token->lexeme);
+	free(token->semanticValue);
+	free(token);
+	return status;
+}
+
 CompilationStatus IdentifierLexemeAction() {
 	Token * token = createToken(_lexicalAnalyzer, ID);
 	token->semanticValue->string = strdup(token->lexeme);

@@ -32,9 +32,9 @@ CodeBlock * Z80CodeBlockAppend(CodeBlock * block, CodeLine * line);
 CodeLine * Z80MakeCodeLineMacroDef(char * name, char ** params, CodeBlock * body);
 CodeLine * Z80MakeCodeLineInsn(Instruction * insn);
 CodeLine * Z80MakeCodeLineLabel(char * label);
-DataLine * Z80MakeDataLineDb(Operand ** exprList);
-DataLine * Z80MakeDataLineDw(Operand ** exprList);
-DataLine * Z80MakeDataLineDs(Operand * expr);
+DataLine * Z80MakeDataLineDb(char * label, Operand ** exprList);
+DataLine * Z80MakeDataLineDw(char * label, Operand ** exprList);
+DataLine * Z80MakeDataLineDs(char * label, Operand * expr);
 
 /* Funciones de construcción de instrucciones */
 Instruction * Z80Insn0(InstructionType type);

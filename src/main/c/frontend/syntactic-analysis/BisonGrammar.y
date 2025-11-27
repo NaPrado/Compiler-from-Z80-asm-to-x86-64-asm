@@ -198,25 +198,17 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %left ADD SUB
 %left MUL DIV
 
-%expect 1
+%expect 0
 
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
 program
-	: dataSeg codeSeg                { $$ = ExpressionProgramSemanticAction($1, $2); }
-	;
-
-dataSeg
-	: DSEG dataBlock                 { $$ = DataSegSemanticAction($2); }
-	| %empty			             { $$ = DataSegSemanticAction(NULL); }
-	;
-
-codeSeg
-	: CSEG codeBlock                 { $$ = CodeSegSemanticAction($2); }
-	| codeBlock                      { $$ = CodeSegSemanticAction($1); }
-	| %empty                         { $$ = CodeSegSemanticAction(NULL); }
+	: DSEG NEW_LINE dataBlock CSEG NEW_LINE codeBlock  { $$ = ExpressionProgramSemanticAction(DataSegSemanticAction($3), CodeSegSemanticAction($6)); }
+	| DSEG NEW_LINE dataBlock CSEG NEW_LINE            { $$ = ExpressionProgramSemanticAction(DataSegSemanticAction($3), CodeSegSemanticAction(NULL)); }
+	| DSEG NEW_LINE dataBlock                          { $$ = ExpressionProgramSemanticAction(DataSegSemanticAction($3), CodeSegSemanticAction(NULL)); }
+	| CSEG NEW_LINE codeBlock                          { $$ = ExpressionProgramSemanticAction(DataSegSemanticAction(NULL), CodeSegSemanticAction($3)); }
 	;
 
 codeBlock
@@ -238,10 +230,10 @@ codeLine
 
 
 dataLine
-	: TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($2); }
-	| TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($2); }
-	| TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($2); }
-	| NEW_LINE                             { $$ = NULL; }
+	: LABEL TOK_DATA_DB exprList NEW_LINE        { $$ = Z80MakeDataLineDb($1, $3); }
+	| LABEL TOK_DATA_DW exprList NEW_LINE        { $$ = Z80MakeDataLineDw($1, $3); }
+	| LABEL TOK_DATA_DS expr NEW_LINE            { $$ = Z80MakeDataLineDs($1, $3); }
+	| NEW_LINE                                   { $$ = NULL; }
 	;
 
 macroDef

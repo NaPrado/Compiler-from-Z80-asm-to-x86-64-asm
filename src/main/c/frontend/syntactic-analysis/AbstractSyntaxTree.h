@@ -121,6 +121,7 @@ struct CodeLine {
 };
 
 struct DataLine {
+    char* label;        // Label obligatorio
     DataType dataType;  // DB, DW, or DS
     Operand** values;   // List of values (for DB/DW) or single size value (for DS)
     int valueCount;     // Number of values

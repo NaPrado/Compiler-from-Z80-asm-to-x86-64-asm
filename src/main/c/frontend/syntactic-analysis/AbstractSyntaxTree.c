@@ -117,6 +117,10 @@ void destroyDataLine(DataLine *line) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
     if (!line) return;
 
+    if (line->label) {
+        free(line->label);
+    }
+
     if (line->values) {
         for (int i = 0; i < line->valueCount; i++) {
             destroyOperand(line->values[i]);

@@ -1,7 +1,7 @@
 Dseg
-DW 0x1234, 0x5678, 0xABCD
+data DW 0x1234, 0x5678, 0xABCD
 
 Cseg
-LD A, DATA
-DATA:
+LD A, data
+rotulo:
 NOP
