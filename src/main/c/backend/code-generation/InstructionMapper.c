@@ -35,6 +35,15 @@ void generateInstruction(Instruction* insn, SymbolTable* table) {
         case INST_LD:
             // LD dst, src -> mov dst, src
             if (insn->operandCount >= 2) {
+                // Si el destino es un registro de 16 bits, limpiar el registro de 64 bits
+                if (insn->operands[0]->type == OPERAND_REGISTER16) {
+                    printf("  xor ");
+                    printf("%s", getX86Register64(insn->operands[0]->reg16));
+                    printf(", ");
+                    printf("%s", getX86Register64(insn->operands[0]->reg16));
+                    printf("\n");
+                }
+                
                 printf("  mov ");
                 generateOperand(insn->operands[0], table);
                 printf(", ");
