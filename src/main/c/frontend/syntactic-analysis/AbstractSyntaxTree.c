@@ -54,6 +54,7 @@ void destroyOperand(Operand *operand) {
             destroyExpression(operand->mem_abs);
             break;
         default:
+            logDebugging(_logger, "No additional resources to free for operand type %d", operand->type);
             break;
     }
 
@@ -107,6 +108,7 @@ void destroyCodeLine(CodeLine *line) {
             free(line->label);
             break;
         default:
+            logDebugging(_logger, "No additional resources to free for code line type %d", line->type);
             break;
     }
 

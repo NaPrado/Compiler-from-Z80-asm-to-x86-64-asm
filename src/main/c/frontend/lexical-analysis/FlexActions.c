@@ -111,9 +111,7 @@ CompilationStatus LabelLexemeAction() {
 	}
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
-	free(token->lexeme);
-	free(token->semanticValue); 
-	free(token);
+	destroyToken(token);
 	return status;
 }
 
@@ -122,9 +120,7 @@ CompilationStatus LabelOrIdentifierAction() {
 	token->semanticValue->string = strdup(token->lexeme);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
-	free(token->lexeme);
-	free(token->semanticValue);
-	free(token);
+	destroyToken(token);
 	return status;
 }
 
@@ -133,9 +129,7 @@ CompilationStatus IdentifierLexemeAction() {
 	token->semanticValue->string = strdup(token->lexeme);
 	_logTokenAction(__FUNCTION__, token);
 	CompilationStatus status = pushToken(_lexicalAnalyzer, token);
-	free(token->lexeme);
-	free(token->semanticValue);
-	free(token);
+	destroyToken(token);
 	return status;
 }
 
