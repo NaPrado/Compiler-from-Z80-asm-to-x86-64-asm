@@ -60,8 +60,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %destructor { if ($$) destroyDataLine($$); } <dataLine>
 %destructor { if ($$) destroyCodeBlock($$); } <codeBlock>
 %destructor { if ($$) destroyDataBlock($$); } <dataBlock>
-%destructor { if ($$) destroyCodeSeg($$); } <codeSeg>
-%destructor { if ($$) destroyDataSeg($$); } <dataSeg>
 
 %destructor { 
     if ($$) {
@@ -176,8 +174,6 @@ void yyerror(const YYLTYPE * location, const char * message) {}
 %type <codeLine>  codeLine
 %type <dataBlock> dataBlock
 %type <codeBlock> codeBlock
-%type <codeSeg>    codeSeg
-%type <dataSeg>    dataSeg
 %type <program>   program
 
 /* estos son necesarios para las reglas de abajo */
