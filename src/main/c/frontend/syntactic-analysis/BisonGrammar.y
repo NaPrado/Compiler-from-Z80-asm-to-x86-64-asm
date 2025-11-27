@@ -233,7 +233,8 @@ dataLine
 	;
 
 macroDef
-	: ID MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE	{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
+	: ID MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE		{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
+	| LABEL MACRO macroParamListOpt NEW_LINE macroBody ENDM NEW_LINE	{ $$ = Z80MakeCodeLineMacroDef($1, $3, $5); }
 	;
 
 macroParamListOpt
@@ -242,8 +243,10 @@ macroParamListOpt
 	;
 
 macroParamList
-	: ID                      { $$ = Z80IdListInit1($1); }
-	| macroParamList COMA ID { $$ = Z80IdListAppend($1, $3); }
+	: ID                       { $$ = Z80IdListInit1($1); }
+	| LABEL                    { $$ = Z80IdListInit1($1); }
+	| macroParamList COMA ID   { $$ = Z80IdListAppend($1, $3); }
+	| macroParamList COMA LABEL { $$ = Z80IdListAppend($1, $3); }
 	;
 
 macroBody
@@ -338,6 +341,7 @@ mem_abs
 expr
 	: INTEGER                                           { $$ = Z80OpImm($1); }
 	| ID                                         		{ $$ = Z80OpSymbol($1); }
+	| LABEL                                         	{ $$ = Z80OpSymbol($1); }
 	;
 
 /* lista de expresiones para declaraciones de datos */
