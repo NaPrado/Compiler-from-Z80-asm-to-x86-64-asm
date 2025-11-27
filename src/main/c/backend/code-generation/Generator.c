@@ -140,6 +140,7 @@ static void generateDataLine(DataLine* line, SymbolTable* table) {
 	
 	switch (line->dataType) {
 		case DATA_DB:
+			printf("%s", line->label);
 			printf("  db ");
 			for (int i = 0; i < line->valueCount; i++) {
 				if (i > 0) printf(", ");
@@ -148,6 +149,7 @@ static void generateDataLine(DataLine* line, SymbolTable* table) {
 			break;
 		
 		case DATA_DW:
+			printf("%s", line->label);
 			printf("  dw ");
 			for (int i = 0; i < line->valueCount; i++) {
 				if (i > 0) printf(", ");
@@ -157,12 +159,14 @@ static void generateDataLine(DataLine* line, SymbolTable* table) {
 		
 		// todo: revisar si se puede poner resb en .data
 		case DATA_DS:
-			printf("  resb ");
+			printf("%s", line->label);
+			printf("  db ");
 			if (line->valueCount > 0 && line->values[0]->type == OPERAND_CONSTANT) {
-				printf("%d", line->values[0]->constantValue);
+				printf("%d", line->values[0]->expr->value);
 			} else {
 				printf("1");
 			}
+			printf(" dup(0)");
 			break;
 	}
 	printf("\n");
